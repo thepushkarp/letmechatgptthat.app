@@ -17,7 +17,7 @@ export function ChatInput({
   onChange,
   onSubmit,
   onKeyDown,
-  placeholder = "Type your question here...",
+  placeholder = "Ask anything...",
   disabled = false,
   autoFocus = true,
 }: ChatInputProps) {
@@ -42,23 +42,35 @@ export function ChatInput({
   const hasValue = value.trim().length > 0;
 
   return (
-    <div className="relative w-full group">
-      {/* Subtle glow effect on focus */}
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-accent/20 to-accent/10 rounded-[30px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 blur-sm" />
-
+    <div className="w-full">
       <div
         className={`
-          relative flex items-end gap-3
-          bg-surface-primary
-          border border-border-subtle
-          rounded-[28px]
-          px-5 py-4
-          transition-all duration-200
-          group-focus-within:border-accent/50
-          group-focus-within:shadow-glow
-          ${disabled ? "opacity-50" : ""}
+          chatgpt-input
+          ${disabled ? "opacity-50 pointer-events-none" : ""}
         `}
       >
+        {/* Attachment button (decorative) */}
+        <button
+          type="button"
+          className="btn-icon flex-shrink-0 -ml-1"
+          aria-label="Attach file"
+          tabIndex={-1}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+        </button>
+
+        {/* Textarea */}
         <textarea
           ref={textareaRef}
           value={value}
@@ -70,19 +82,19 @@ export function ChatInput({
           className="
             flex-1
             bg-transparent
-            text-text-primary
-            placeholder-text-muted
+            text-[var(--text-primary)]
+            placeholder-[var(--text-placeholder)]
             resize-none
             outline-none
-            min-h-[28px]
+            min-h-[24px]
             max-h-[200px]
-            overflow-y-auto
-            text-[16px]
-            leading-7
+            text-[15px]
+            leading-6
+            py-1.5
           "
           style={{
             height: "auto",
-            minHeight: "28px",
+            minHeight: "24px",
           }}
         />
 
@@ -90,35 +102,28 @@ export function ChatInput({
         <button
           onClick={onSubmit}
           disabled={disabled || !hasValue}
-          className={`
-            relative
-            p-2.5
-            rounded-xl
-            transition-all duration-200
-            flex-shrink-0
-            ${
-              hasValue
-                ? "bg-accent hover:bg-accent-hover text-white shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                : "bg-bg-tertiary text-text-muted cursor-not-allowed"
-            }
-          `}
-          aria-label="Generate link"
+          className={`send-btn ${hasValue ? "active" : "inactive"}`}
+          aria-label="Send message"
         >
           <svg
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
-            className="w-5 h-5"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
-            />
+            <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </button>
       </div>
+
+      {/* Hint text */}
+      <p className="text-center text-[var(--text-muted)] text-xs mt-3">
+        Press Enter to generate link, Shift+Enter for new line
+      </p>
     </div>
   );
 }

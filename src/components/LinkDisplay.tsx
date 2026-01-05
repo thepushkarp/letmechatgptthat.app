@@ -19,21 +19,29 @@ export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
 
   return (
     <div
-      className={`
-        space-y-5 p-6
-        bg-surface-primary
-        rounded-2xl
-        border border-border-subtle
-        shadow-lg
-        transition-all duration-500
-        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
-      `}
+      className={`space-y-5 p-6 transition-all duration-500 ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      }`}
+      style={{
+        background: "var(--surface-primary)",
+        borderRadius: "var(--radius-xl)",
+        border: "1px solid var(--border-subtle)",
+        boxShadow: "var(--shadow-md)",
+        transitionTimingFunction: "var(--ease-out-expo)",
+      }}
     >
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="p-2 rounded-lg bg-accent/10">
+        <div
+          className="p-2.5"
+          style={{
+            background: "var(--accent-light)",
+            borderRadius: "var(--radius-lg)",
+          }}
+        >
           <svg
-            className="w-5 h-5 text-accent"
+            className="w-5 h-5"
+            style={{ color: "var(--accent)" }}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -47,10 +55,16 @@ export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
           </svg>
         </div>
         <div>
-          <h3 className="font-display font-semibold text-text-primary">
+          <h3
+            className="font-semibold"
+            style={{ color: "var(--text-primary)", fontSize: "16px" }}
+          >
             Your link is ready
           </h3>
-          <p className="text-text-secondary text-sm mt-0.5">
+          <p
+            className="mt-0.5"
+            style={{ color: "var(--text-secondary)", fontSize: "14px" }}
+          >
             Share this with someone who should have just asked ChatGPT
           </p>
         </div>
@@ -63,41 +77,44 @@ export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
             type="text"
             value={link}
             readOnly
-            className="
-              w-full
-              bg-bg-primary
-              text-text-primary
-              px-4 py-3.5
-              rounded-xl
-              border border-border-subtle
-              text-sm
-              font-mono
-              outline-none
-              transition-colors
-              group-hover:border-border-default
-              cursor-text
-              selection:bg-accent/20
-            "
+            className="w-full outline-none transition-colors cursor-text"
+            style={{
+              background: "var(--bg-primary)",
+              color: "var(--text-primary)",
+              padding: "14px 16px",
+              borderRadius: "var(--radius-lg)",
+              border: "1px solid var(--border-subtle)",
+              fontSize: "14px",
+              fontFamily: "var(--font-mono, 'SF Mono', Menlo, monospace)",
+            }}
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />
         </div>
 
         <button
           onClick={onCopy}
-          className={`
-            px-5 py-3.5
-            rounded-xl
-            font-medium
-            text-sm
-            transition-all duration-200
-            flex items-center gap-2
-            whitespace-nowrap
-            ${
-              copied
-                ? "bg-accent/20 text-accent border border-accent/30"
-                : "bg-accent hover:bg-accent-hover text-white shadow-sm hover:shadow-md hover:-translate-y-0.5"
+          className="flex items-center gap-2 whitespace-nowrap font-medium transition-all duration-200"
+          style={{
+            padding: "14px 20px",
+            borderRadius: "var(--radius-lg)",
+            fontSize: "14px",
+            background: copied ? "var(--accent-light)" : "var(--accent)",
+            color: copied ? "var(--accent)" : "white",
+            border: copied ? "1px solid rgba(16, 163, 127, 0.3)" : "none",
+            transform: copied ? "none" : "translateY(0)",
+          }}
+          onMouseEnter={(e) => {
+            if (!copied) {
+              e.currentTarget.style.background = "var(--accent-hover)";
+              e.currentTarget.style.transform = "translateY(-1px)";
             }
-          `}
+          }}
+          onMouseLeave={(e) => {
+            if (!copied) {
+              e.currentTarget.style.background = "var(--accent)";
+              e.currentTarget.style.transform = "translateY(0)";
+            }
+          }}
         >
           {copied ? (
             <>
@@ -143,13 +160,8 @@ export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
           href={link}
           target="_blank"
           rel="noopener noreferrer"
-          className="
-            inline-flex items-center gap-1.5
-            text-accent hover:text-accent-hover
-            text-sm
-            transition-colors
-            group
-          "
+          className="inline-flex items-center gap-1.5 text-sm transition-colors group"
+          style={{ color: "var(--accent)" }}
         >
           <svg
             className="w-4 h-4"

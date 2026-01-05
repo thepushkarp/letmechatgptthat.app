@@ -59,11 +59,14 @@ function LandingPage() {
   );
 
   return (
-    <main className="min-h-screen flex flex-col bg-bg-primary">
+    <main
+      className="min-h-screen flex flex-col"
+      style={{ background: "var(--bg-primary)" }}
+    >
       <Header />
 
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 sm:py-16">
-        <div className="w-full max-w-2xl space-y-10">
+        <div className="w-full max-w-[680px] space-y-10">
           {/* Hero section */}
           <div
             className={`text-center space-y-5 transition-all duration-700 ${
@@ -71,11 +74,25 @@ function LandingPage() {
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-6"
             }`}
+            style={{ transitionTimingFunction: "var(--ease-out-expo)" }}
           >
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-text-primary tracking-tight">
+            <h1
+              className="font-bold tracking-tight"
+              style={{
+                color: "var(--text-primary)",
+                fontSize: "clamp(2.25rem, 5vw, 3.5rem)",
+                lineHeight: 1.1,
+              }}
+            >
               Let Me ChatGPT That
             </h1>
-            <p className="text-text-secondary text-lg sm:text-xl max-w-lg mx-auto leading-relaxed">
+            <p
+              className="max-w-lg mx-auto leading-relaxed"
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "clamp(1rem, 2vw, 1.25rem)",
+              }}
+            >
               For all those people who find it more convenient to bother you
               with their question rather than ChatGPT it themselves.
             </p>
@@ -83,11 +100,15 @@ function LandingPage() {
 
           {/* Input section */}
           <div
-            className={`space-y-6 transition-all duration-700 delay-150 ${
+            className={`space-y-5 transition-all duration-700 ${
               isVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-6"
             }`}
+            style={{
+              transitionDelay: "100ms",
+              transitionTimingFunction: "var(--ease-out-expo)",
+            }}
           >
             <ChatInput
               value={query}
@@ -101,17 +122,31 @@ function LandingPage() {
               <button
                 onClick={generateLink}
                 disabled={!query.trim()}
-                className="
-                  px-8 py-3.5
-                  bg-accent hover:bg-accent-hover
-                  disabled:bg-bg-tertiary disabled:text-text-muted
-                  text-white font-medium
-                  rounded-full
-                  transition-all duration-200
-                  disabled:cursor-not-allowed
-                  hover:shadow-md hover:-translate-y-0.5
-                  active:translate-y-0
-                "
+                className="font-medium transition-all duration-200"
+                style={{
+                  padding: "14px 32px",
+                  background: query.trim()
+                    ? "var(--accent)"
+                    : "var(--bg-tertiary)",
+                  color: query.trim() ? "white" : "var(--text-muted)",
+                  borderRadius: "var(--radius-full)",
+                  cursor: query.trim() ? "pointer" : "not-allowed",
+                  fontSize: "15px",
+                }}
+                onMouseEnter={(e) => {
+                  if (query.trim()) {
+                    e.currentTarget.style.background = "var(--accent-hover)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "var(--shadow-md)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (query.trim()) {
+                    e.currentTarget.style.background = "var(--accent)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }
+                }}
               >
                 Generate Link
               </button>
@@ -126,6 +161,7 @@ function LandingPage() {
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-6"
               }`}
+              style={{ transitionTimingFunction: "var(--ease-out-expo)" }}
             >
               <LinkDisplay
                 link={generatedLink}
@@ -138,14 +174,18 @@ function LandingPage() {
       </div>
 
       {/* Footer */}
-      <footer className="text-center py-6 border-t border-border-subtle">
-        <p className="text-text-muted text-sm">
+      <footer
+        className="text-center py-6"
+        style={{ borderTop: "1px solid var(--border-subtle)" }}
+      >
+        <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>
           This site is not affiliated with OpenAI.{" "}
           <a
             href="https://chatgpt.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-accent hover:text-accent-hover transition-colors hover:underline"
+            className="transition-colors hover:underline"
+            style={{ color: "var(--accent)" }}
           >
             ChatGPT
           </a>{" "}
@@ -158,10 +198,22 @@ function LandingPage() {
 
 function LoadingSpinner() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-bg-primary">
+    <main
+      className="min-h-screen flex flex-col items-center justify-center"
+      style={{ background: "var(--bg-primary)" }}
+    >
       <div className="relative">
-        <div className="w-10 h-10 border-2 border-accent/30 rounded-full" />
-        <div className="absolute inset-0 w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <div
+          className="w-10 h-10 rounded-full"
+          style={{ border: "2px solid rgba(16, 163, 127, 0.3)" }}
+        />
+        <div
+          className="absolute inset-0 w-10 h-10 rounded-full animate-spin"
+          style={{
+            border: "2px solid var(--accent)",
+            borderTopColor: "transparent",
+          }}
+        />
       </div>
     </main>
   );
