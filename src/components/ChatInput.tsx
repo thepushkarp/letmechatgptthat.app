@@ -95,6 +95,7 @@ export function ChatInput({
           style={{
             height: "auto",
             minHeight: "24px",
+            fontFamily: "var(--font-mono)",
           }}
         />
 

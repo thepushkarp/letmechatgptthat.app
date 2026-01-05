@@ -175,7 +175,7 @@ function LandingPage() {
 
       {/* Footer */}
       <footer
-        className="text-center py-6"
+        className="text-center py-6 px-4"
         style={{ borderTop: "1px solid var(--border-subtle)" }}
       >
         <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>

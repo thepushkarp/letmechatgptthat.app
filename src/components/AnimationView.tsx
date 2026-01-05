@@ -236,7 +236,7 @@ export function AnimationView({ query }: AnimationViewProps) {
                   <div className="relative">
                     <div
                       className="w-10 h-10 rounded-full"
-                      style={{ border: "2px solid rgba(16, 163, 127, 0.3)" }}
+                      style={{ border: "2px solid var(--accent-light)" }}
                     />
                     <div
                       className="absolute inset-0 w-10 h-10 rounded-full animate-spin"
@@ -280,7 +280,7 @@ export function AnimationView({ query }: AnimationViewProps) {
                   borderRadius: "var(--radius-2xl)",
                   border:
                     phase === "sending"
-                      ? "1px solid rgba(16, 163, 127, 0.5)"
+                      ? "1px solid var(--accent)"
                       : "1px solid var(--border-input)",
                   boxShadow:
                     phase === "sending" ? "var(--shadow-glow)" : "none",
