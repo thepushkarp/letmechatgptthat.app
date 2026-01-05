@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef, useEffect } from "react";
+
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -5,6 +9,7 @@ interface ChatInputProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
   placeholder?: string;
   disabled?: boolean;
+  autoFocus?: boolean;
 }
 
 export function ChatInput({
@@ -12,51 +17,113 @@ export function ChatInput({
   onChange,
   onSubmit,
   onKeyDown,
-  placeholder = "Message ChatGPT...",
+  placeholder = "Ask anything...",
   disabled = false,
+  autoFocus = true,
 }: ChatInputProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+    }
+  }, [value]);
+
+  // Auto-focus on mount
+  useEffect(() => {
+    if (autoFocus && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [autoFocus]);
+
+  const hasValue = value.trim().length > 0;
+
   return (
-    <div className="relative w-full">
-      <div className="flex items-end gap-2 bg-[#2f2f2f] border border-[#424242] rounded-3xl px-4 py-3 focus-within:border-[#10a37f] transition-colors">
+    <div className="w-full">
+      <div
+        className={`
+          chatgpt-input
+          ${disabled ? "opacity-50 pointer-events-none" : ""}
+        `}
+      >
+        {/* Attachment button (decorative) */}
+        <button
+          type="button"
+          className="btn-icon flex-shrink-0 -ml-1"
+          aria-label="Attach file"
+          tabIndex={-1}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+        </button>
+
+        {/* Textarea */}
         <textarea
+          ref={textareaRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
-          className="flex-1 bg-transparent text-white placeholder-gray-500 resize-none outline-none min-h-[24px] max-h-[200px] overflow-y-auto"
+          className="
+            flex-1
+            bg-transparent
+            text-[var(--text-primary)]
+            placeholder-[var(--text-placeholder)]
+            resize-none
+            outline-none
+            min-h-[24px]
+            max-h-[200px]
+            text-[15px]
+            leading-6
+            py-1.5
+          "
           style={{
             height: "auto",
             minHeight: "24px",
           }}
-          onInput={(e) => {
-            const target = e.target as HTMLTextAreaElement;
-            target.style.height = "auto";
-            target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-          }}
         />
+
+        {/* Send button */}
         <button
           onClick={onSubmit}
-          disabled={disabled || !value.trim()}
-          className="p-2 bg-white disabled:bg-gray-600 rounded-full transition-colors hover:bg-gray-200 disabled:cursor-not-allowed flex-shrink-0"
+          disabled={disabled || !hasValue}
+          className={`send-btn ${hasValue ? "active" : "inactive"}`}
           aria-label="Send message"
         >
           <svg
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
-            className="w-5 h-5 text-black"
             stroke="currentColor"
             strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 19V5m0 0l-7 7m7-7l7 7"
-            />
+            <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </button>
       </div>
+
+      {/* Hint text */}
+      <p className="text-center text-[var(--text-muted)] text-xs mt-3">
+        Press Enter to generate link, Shift+Enter for new line
+      </p>
     </div>
   );
 }
