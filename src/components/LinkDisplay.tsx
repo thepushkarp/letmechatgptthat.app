@@ -85,7 +85,7 @@ export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
               borderRadius: "var(--radius-lg)",
               border: "1px solid var(--border-subtle)",
               fontSize: "14px",
-              fontFamily: "var(--font-mono, 'SF Mono', Menlo, monospace)",
+              fontFamily: "var(--font-mono)",
             }}
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />
@@ -100,7 +100,7 @@ export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
             fontSize: "14px",
             background: copied ? "var(--accent-light)" : "var(--accent)",
             color: copied ? "var(--accent)" : "white",
-            border: copied ? "1px solid rgba(16, 163, 127, 0.3)" : "none",
+            border: copied ? "1px solid var(--accent-light)" : "none",
             transform: copied ? "none" : "translateY(0)",
           }}
           onMouseEnter={(e) => {
