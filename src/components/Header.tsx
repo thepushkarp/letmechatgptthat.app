@@ -17,7 +17,7 @@ export function Header() {
 
       {/* Creator attribution */}
       <a
-        href="https://www.thepushkarp.com/"
+        href="https://x.com/thepushkarp"
         target="_blank"
         rel="noopener noreferrer"
         className="text-xs transition-all duration-150"
