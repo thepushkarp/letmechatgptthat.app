@@ -18,7 +18,24 @@ export function AnimationView({ query }: AnimationViewProps) {
 
   const redirectToChatGPT = useCallback(() => {
     const encodedQuery = encodeURIComponent(query);
-    window.location.href = `https://chatgpt.com/?q=${encodedQuery}`;
+    const url = `https://chatgpt.com/?q=${encodedQuery}`;
+
+    // Use anchor click for mobile deep linking - more reliable for triggering
+    // Universal Links (iOS) and App Links (Android) than window.location.href
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.style.display = "none";
+    // These attributes help ensure proper deep link behavior on mobile
+    anchor.setAttribute("rel", "noopener");
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+
+    // Fallback: if anchor click didn't navigate (some browsers block it),
+    // use window.location after a short delay
+    setTimeout(() => {
+      window.location.href = url;
+    }, 100);
   }, [query]);
 
   // Initial mount animation
