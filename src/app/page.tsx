@@ -12,6 +12,8 @@ function LandingPage() {
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Trigger entrance animation
   useEffect(() => {
@@ -19,15 +21,33 @@ function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const generateLink = useCallback(() => {
-    if (!query.trim()) return;
+  const generateLink = useCallback(async () => {
+    if (!query.trim() || isGenerating) return;
 
-    const encodedQuery = encodeURIComponent(query.trim());
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-    const link = `${baseUrl}/?q=${encodedQuery}`;
-    setGeneratedLink(link);
-    setCopied(false);
-  }, [query]);
+    setIsGenerating(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/shorten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate link");
+      }
+
+      setGeneratedLink(data.url);
+      setCopied(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate link");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [query, isGenerating]);
 
   const copyToClipboard = useCallback(async () => {
     if (!generatedLink) return;
@@ -118,38 +138,47 @@ function LandingPage() {
               placeholder="Type your question here..."
             />
 
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-3">
               <button
                 onClick={generateLink}
-                disabled={!query.trim()}
+                disabled={!query.trim() || isGenerating}
                 className="font-medium transition-all duration-200"
                 style={{
                   padding: "14px 32px",
-                  background: query.trim()
-                    ? "var(--accent)"
-                    : "var(--bg-tertiary)",
-                  color: query.trim() ? "white" : "var(--text-muted)",
+                  background:
+                    query.trim() && !isGenerating
+                      ? "var(--accent)"
+                      : "var(--bg-tertiary)",
+                  color:
+                    query.trim() && !isGenerating
+                      ? "white"
+                      : "var(--text-muted)",
                   borderRadius: "var(--radius-full)",
-                  cursor: query.trim() ? "pointer" : "not-allowed",
+                  cursor:
+                    query.trim() && !isGenerating ? "pointer" : "not-allowed",
                   fontSize: "15px",
+                  opacity: isGenerating ? 0.7 : 1,
                 }}
                 onMouseEnter={(e) => {
-                  if (query.trim()) {
+                  if (query.trim() && !isGenerating) {
                     e.currentTarget.style.background = "var(--accent-hover)";
                     e.currentTarget.style.transform = "translateY(-2px)";
                     e.currentTarget.style.boxShadow = "var(--shadow-md)";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (query.trim()) {
+                  if (query.trim() && !isGenerating) {
                     e.currentTarget.style.background = "var(--accent)";
                     e.currentTarget.style.transform = "translateY(0)";
                     e.currentTarget.style.boxShadow = "none";
                   }
                 }}
               >
-                Generate Link
+                {isGenerating ? "Generating..." : "Generate Link"}
               </button>
+              {error && (
+                <p style={{ color: "#ef4444", fontSize: "14px" }}>{error}</p>
+              )}
             </div>
           </div>
 
