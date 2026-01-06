@@ -16,27 +16,32 @@ export function AnimationView({ query }: AnimationViewProps) {
   const [showCursor, setShowCursor] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
 
-  const redirectToChatGPT = useCallback(() => {
-    const encodedQuery = encodeURIComponent(query);
-    const url = `https://chatgpt.com/?q=${encodedQuery}`;
+  // Build the ChatGPT URL - used by both the link and any programmatic redirects
+  const chatGPTUrl = `https://chatgpt.com/?q=${encodeURIComponent(query)}`;
 
-    // Use anchor click for mobile deep linking - more reliable for triggering
-    // Universal Links (iOS) and App Links (Android) than window.location.href
+  // Attempt auto-redirect using multiple techniques for best mobile app compatibility
+  const attemptRedirect = useCallback(() => {
+    // Create a visible anchor and click it - this is more likely to trigger
+    // Universal Links on iOS and App Links on Android than window.location
     const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.style.display = "none";
-    // These attributes help ensure proper deep link behavior on mobile
-    anchor.setAttribute("rel", "noopener");
+    anchor.href = chatGPTUrl;
+    anchor.style.cssText = "position:fixed;top:-1000px;opacity:0;";
     document.body.appendChild(anchor);
     anchor.click();
-    document.body.removeChild(anchor);
 
-    // Fallback: if anchor click didn't navigate (some browsers block it),
-    // use window.location after a short delay
+    // Fallback: use location.replace after a delay (replaces history entry)
+    // This helps if the anchor click was blocked
     setTimeout(() => {
-      window.location.href = url;
-    }, 100);
-  }, [query]);
+      window.location.replace(chatGPTUrl);
+    }, 150);
+
+    // Clean up
+    setTimeout(() => {
+      if (document.body.contains(anchor)) {
+        document.body.removeChild(anchor);
+      }
+    }, 200);
+  }, [chatGPTUrl]);
 
   // Initial mount animation
   useEffect(() => {
@@ -76,10 +81,11 @@ export function AnimationView({ query }: AnimationViewProps) {
     }
 
     if (phase === "redirecting") {
-      const timeout = setTimeout(redirectToChatGPT, 1200);
+      // Auto-redirect after a short delay
+      const timeout = setTimeout(attemptRedirect, 800);
       return () => clearTimeout(timeout);
     }
-  }, [phase, displayedText, query, redirectToChatGPT]);
+  }, [phase, displayedText, query, attemptRedirect]);
 
   // Blinking cursor with realistic timing
   useEffect(() => {
@@ -133,7 +139,7 @@ export function AnimationView({ query }: AnimationViewProps) {
                   <p
                     style={{ color: "var(--text-secondary)", fontSize: "14px" }}
                   >
-                    Redirecting to ChatGPT...
+                    Opening ChatGPT...
                   </p>
                 </>
               ) : (
@@ -249,7 +255,7 @@ export function AnimationView({ query }: AnimationViewProps) {
               style={{ background: "var(--bg-primary)" }}
             >
               {phase === "redirecting" ? (
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-5">
                   <div className="relative">
                     <div
                       className="w-10 h-10 rounded-full"
@@ -266,8 +272,29 @@ export function AnimationView({ query }: AnimationViewProps) {
                   <p
                     style={{ color: "var(--text-tertiary)", fontSize: "15px" }}
                   >
-                    Opening ChatGPT...
+                    Redirecting...
                   </p>
+                  {/* Fallback link for mobile - tap if auto-redirect opens in browser */}
+                  <a
+                    href={chatGPTUrl}
+                    className="inline-flex items-center gap-2 text-sm transition-colors"
+                    style={{ color: "var(--accent)", textDecoration: "none" }}
+                  >
+                    <span>Tap here to open in app</span>
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </a>
                 </div>
               ) : (
                 <p
@@ -395,7 +422,7 @@ export function AnimationView({ query }: AnimationViewProps) {
             </div>
           </div>
 
-          {/* Skip button */}
+          {/* Skip button - use actual anchor for reliable mobile deep linking */}
           {phase !== "redirecting" && (
             <div
               className={`text-center transition-all duration-500 ${
@@ -405,16 +432,10 @@ export function AnimationView({ query }: AnimationViewProps) {
               }`}
               style={{ transitionDelay: "400ms" }}
             >
-              <button
-                onClick={redirectToChatGPT}
+              <a
+                href={chatGPTUrl}
                 className="inline-flex items-center gap-1.5 text-sm transition-colors group"
-                style={{ color: "var(--text-muted)" }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--text-secondary)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--text-muted)")
-                }
+                style={{ color: "var(--text-muted)", textDecoration: "none" }}
               >
                 Skip animation
                 <svg
@@ -430,7 +451,7 @@ export function AnimationView({ query }: AnimationViewProps) {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </button>
+              </a>
             </div>
           )}
         </div>
