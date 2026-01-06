@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add comprehensive SEO optimization and social previews\n\n- Add dynamic OG image generation with ChatGPT-style branding\n- Add Twitter card image for social sharing\n- Add favicon and apple-touch-icon generation\n- Enhance metadata with canonical URLs, JSON-LD structured data\n- Add extended keywords and proper robot directives\n- Configure metadataBase for proper URL resolution\n- Fix missing eslint plugins for Next.js\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(yarn remove:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add comprehensive SEO optimization and social previews\n\n- Add dynamic OG image generation with ChatGPT-style branding\n- Add Twitter card image for social sharing\n- Add favicon and apple-touch-icon generation\n- Enhance metadata with canonical URLs, JSON-LD structured data\n- Add extended keywords and proper robot directives\n- Configure metadataBase for proper URL resolution\n- Fix eslint plugin version mismatches\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}
