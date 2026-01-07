@@ -219,6 +219,40 @@ body {
   }
 }
 
+/* Cursor click - scale down on press */
+@keyframes cursorClick {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.85);
+  }
+}
+
+/* Ripple expand - click feedback */
+@keyframes rippleExpand {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Tap press - touch device feedback */
+@keyframes tapPress {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(0.9) translateY(4px);
+  }
+}
+
 /* ========================================
    ANIMATION UTILITIES
    ======================================== */
@@ -245,6 +279,26 @@ body {
 
 .animate-glow-pulse {
   animation: glowPulse 2s ease-in-out infinite;
+}
+
+.animate-cursor-click {
+  animation: cursorClick 0.15s ease-out;
+}
+
+.animate-ripple {
+  animation: rippleExpand 0.4s ease-out forwards;
+}
+
+.animate-tap-press {
+  animation: tapPress 0.2s ease-out;
+}
+
+/* Input focus ring for cursor click effect */
+.input-focus-ring {
+  border-color: rgba(116, 170, 156, 0.5) !important;
+  box-shadow:
+    var(--shadow-input-focus),
+    0 0 0 4px rgba(116, 170, 156, 0.1) !important;
 }
 
 /* Stagger delays */

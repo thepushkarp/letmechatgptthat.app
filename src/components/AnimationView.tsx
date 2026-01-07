@@ -1,25 +1,68 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Header } from "./Header";
+import { AnimatedCursor } from "./AnimatedCursor";
+import { TapIndicator } from "./TapIndicator";
+import { ClickRipple } from "./ClickRipple";
+import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 
 interface AnimationViewProps {
   query: string;
 }
 
+type Phase =
+  | "idle" // Initial state, cursor not visible yet
+  | "cursorToInput" // Cursor moving to input box
+  | "clicking" // Click animation + ripple
+  | "typing" // Typing animation
+  | "pause" // Brief pause after typing
+  | "cursorToSend" // Cursor moving to send button
+  | "waiting" // Waiting for user click, countdown active
+  | "redirecting"; // Redirect in progress
+
 export function AnimationView({ query }: AnimationViewProps) {
+  // Existing state
   const [displayedText, setDisplayedText] = useState("");
-  const [phase, setPhase] = useState<
-    "typing" | "pause" | "sending" | "redirecting"
-  >("typing");
-  const [showCursor, setShowCursor] = useState(true);
+  const [showTextCursor, setShowTextCursor] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+
+  // New state for cursor animation
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [cursorPosition, setCursorPosition] = useState({ x: 80, y: 120 });
+  const [isClicking, setIsClicking] = useState(false);
+  const [showRipple, setShowRipple] = useState(false);
+  const [rippleOrigin, setRippleOrigin] = useState({ x: 0, y: 0 });
+  const [countdown, setCountdown] = useState(5);
+  const [inputFocused, setInputFocused] = useState(false);
+
+  // Refs for element positions
+  const mockupRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLDivElement>(null);
+  const sendButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Touch device detection
+  const isTouchDevice = useIsTouchDevice();
 
   const redirectToChatGPT = useCallback(() => {
     const encodedQuery = encodeURIComponent(query);
     window.location.href = `https://chatgpt.com/?q=${encodedQuery}`;
   }, [query]);
+
+  // Helper to get element center relative to mockup
+  const getElementCenter = useCallback(
+    (ref: React.RefObject<HTMLElement | null>) => {
+      if (!ref.current || !mockupRef.current) return { x: 80, y: 120 };
+      const mockupRect = mockupRef.current.getBoundingClientRect();
+      const elRect = ref.current.getBoundingClientRect();
+      return {
+        x: elRect.left - mockupRect.left + elRect.width / 2,
+        y: elRect.top - mockupRect.top + elRect.height / 2,
+      };
+    },
+    []
+  );
 
   // Initial mount animation
   useEffect(() => {
@@ -27,11 +70,45 @@ export function AnimationView({ query }: AnimationViewProps) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Typing animation with realistic variable speed
+  // Main phase transition logic
   useEffect(() => {
+    // idle → cursorToInput (after mount animation)
+    if (phase === "idle" && isVisible) {
+      const timer = setTimeout(() => {
+        const inputCenter = getElementCenter(inputRef);
+        setCursorPosition(inputCenter);
+        setPhase("cursorToInput");
+      }, 600); // Wait for fade-in
+      return () => clearTimeout(timer);
+    }
+
+    // cursorToInput → clicking (after cursor arrives)
+    if (phase === "cursorToInput") {
+      const timer = setTimeout(() => {
+        setPhase("clicking");
+      }, 400); // 0.35s cursor movement + buffer
+      return () => clearTimeout(timer);
+    }
+
+    // clicking → typing (after click animation)
+    if (phase === "clicking") {
+      setIsClicking(true);
+      const inputCenter = getElementCenter(inputRef);
+      setRippleOrigin(inputCenter);
+      setShowRipple(true);
+      setInputFocused(true);
+
+      const timer = setTimeout(() => {
+        setIsClicking(false);
+        setShowRipple(false);
+        setPhase("typing");
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+
+    // typing (character by character)
     if (phase === "typing") {
       if (displayedText.length < query.length) {
-        // Vary typing speed based on character (spaces are faster)
         const nextChar = query[displayedText.length];
         const baseDelay = nextChar === " " ? 30 : 50;
         const timeout = setTimeout(
@@ -47,32 +124,88 @@ export function AnimationView({ query }: AnimationViewProps) {
       }
     }
 
+    // pause → cursorToSend
     if (phase === "pause") {
-      const timeout = setTimeout(() => setPhase("sending"), 700);
-      return () => clearTimeout(timeout);
+      const timer = setTimeout(() => {
+        const sendCenter = getElementCenter(sendButtonRef);
+        setCursorPosition(sendCenter);
+        setPhase("cursorToSend");
+      }, 700);
+      return () => clearTimeout(timer);
     }
 
-    if (phase === "sending") {
-      setShowCursor(false);
-      const timeout = setTimeout(() => setPhase("redirecting"), 1000);
-      return () => clearTimeout(timeout);
+    // cursorToSend → waiting
+    if (phase === "cursorToSend") {
+      const timer = setTimeout(() => {
+        setCountdown(5); // Reset countdown
+        setPhase("waiting");
+      }, 400);
+      return () => clearTimeout(timer);
     }
 
+    // redirecting
     if (phase === "redirecting") {
-      const timeout = setTimeout(redirectToChatGPT, 1200);
+      const timeout = setTimeout(redirectToChatGPT, 500);
       return () => clearTimeout(timeout);
     }
-  }, [phase, displayedText, query, redirectToChatGPT]);
+  }, [
+    phase,
+    displayedText,
+    query,
+    isVisible,
+    redirectToChatGPT,
+    getElementCenter,
+  ]);
 
-  // Blinking cursor with realistic timing
+  // Countdown timer during waiting phase
+  useEffect(() => {
+    if (phase === "waiting") {
+      const interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            setPhase("redirecting");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [phase]);
+
+  // Keyboard listener for Enter key during waiting phase
+  useEffect(() => {
+    if (phase === "waiting") {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Enter") {
+          setPhase("redirecting");
+        }
+      };
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [phase]);
+
+  // Blinking text cursor with realistic timing
   useEffect(() => {
     if (phase === "typing" || phase === "pause") {
       const interval = setInterval(() => {
-        setShowCursor((prev) => !prev);
+        setShowTextCursor((prev) => !prev);
       }, 530);
       return () => clearInterval(interval);
     }
   }, [phase]);
+
+  // Handle send button click
+  const handleSendClick = useCallback(() => {
+    if (phase === "waiting") {
+      setPhase("redirecting");
+    }
+  }, [phase]);
+
+  // Determine if cursor should be visible
+  const cursorVisible =
+    phase !== "idle" && phase !== "redirecting" && isVisible;
 
   return (
     <main
@@ -136,9 +269,10 @@ export function AnimationView({ query }: AnimationViewProps) {
             </div>
           </div>
 
-          {/* ChatGPT Interface Mockup - More accurate representation */}
+          {/* ChatGPT Interface Mockup */}
           <div
-            className={`overflow-hidden transition-all duration-600 ${
+            ref={mockupRef}
+            className={`overflow-hidden relative transition-all duration-600 ${
               isVisible ? "opacity-100 scale-100" : "opacity-0 scale-[0.97]"
             }`}
             style={{
@@ -267,23 +401,26 @@ export function AnimationView({ query }: AnimationViewProps) {
 
             {/* Input area - matches real ChatGPT */}
             <div
-              className="p-4"
+              className="p-4 relative"
               style={{
                 background: "var(--bg-primary)",
                 borderTop: "1px solid var(--border-subtle)",
               }}
             >
               <div
-                className="flex items-end gap-3 px-4 py-3 transition-all duration-300"
+                ref={inputRef}
+                className={`flex items-end gap-3 px-4 py-3 transition-all duration-300 ${
+                  inputFocused ? "input-focus-ring" : ""
+                }`}
                 style={{
                   background: "var(--bg-elevated)",
                   borderRadius: "var(--radius-2xl)",
                   border:
-                    phase === "sending"
+                    phase === "waiting"
                       ? "1px solid var(--accent)"
                       : "1px solid var(--border-input)",
                   boxShadow:
-                    phase === "sending" ? "var(--shadow-glow)" : "none",
+                    phase === "waiting" ? "var(--shadow-glow)" : "none",
                 }}
               >
                 {/* Attachment button (decorative) */}
@@ -321,15 +458,16 @@ export function AnimationView({ query }: AnimationViewProps) {
                   }}
                 >
                   {displayedText}
-                  {showCursor && (phase === "typing" || phase === "pause") && (
-                    <span
-                      className="inline-block w-[2px] h-5 ml-0.5 align-middle"
-                      style={{
-                        background: "var(--text-primary)",
-                        animation: "cursorBlink 1s step-end infinite",
-                      }}
-                    />
-                  )}
+                  {showTextCursor &&
+                    (phase === "typing" || phase === "pause") && (
+                      <span
+                        className="inline-block w-[2px] h-5 ml-0.5 align-middle"
+                        style={{
+                          background: "var(--text-primary)",
+                          animation: "cursorBlink 1s step-end infinite",
+                        }}
+                      />
+                    )}
                   {!displayedText && (
                     <span style={{ color: "var(--text-placeholder)" }}>
                       Message ChatGPT
@@ -339,16 +477,21 @@ export function AnimationView({ query }: AnimationViewProps) {
 
                 {/* Send button */}
                 <button
+                  ref={sendButtonRef}
+                  onClick={handleSendClick}
                   className="p-2.5 flex-shrink-0 transition-all duration-300"
                   style={{
                     borderRadius: "var(--radius-lg)",
                     background:
-                      phase === "sending"
+                      phase === "waiting"
                         ? "var(--accent)"
                         : displayedText
                           ? "white"
                           : "var(--bg-tertiary)",
-                    transform: phase === "sending" ? "scale(0.92)" : "scale(1)",
+                    transform: phase === "waiting" ? "scale(1.05)" : "scale(1)",
+                    cursor: phase === "waiting" ? "pointer" : "default",
+                    boxShadow:
+                      phase === "waiting" ? "var(--shadow-glow)" : "none",
                   }}
                   aria-label="Send message"
                 >
@@ -358,7 +501,7 @@ export function AnimationView({ query }: AnimationViewProps) {
                     className="w-5 h-5 transition-colors duration-300"
                     style={{
                       color:
-                        phase === "sending"
+                        phase === "waiting"
                           ? "white"
                           : displayedText
                             ? "var(--bg-primary)"
@@ -375,7 +518,38 @@ export function AnimationView({ query }: AnimationViewProps) {
                   </svg>
                 </button>
               </div>
+
+              {/* Countdown display */}
+              {phase === "waiting" && (
+                <div
+                  className="text-center mt-3"
+                  style={{
+                    color: "var(--text-muted)",
+                    fontSize: "13px",
+                  }}
+                >
+                  Redirecting in {countdown}... (click or press Enter)
+                </div>
+              )}
             </div>
+
+            {/* Animated cursor / tap indicator */}
+            {!isTouchDevice ? (
+              <AnimatedCursor
+                position={cursorPosition}
+                isClicking={isClicking}
+                visible={cursorVisible}
+              />
+            ) : (
+              <TapIndicator
+                position={cursorPosition}
+                isClicking={isClicking}
+                visible={cursorVisible}
+              />
+            )}
+
+            {/* Click ripple */}
+            <ClickRipple origin={rippleOrigin} active={showRipple} />
           </div>
 
           {/* Skip button */}
