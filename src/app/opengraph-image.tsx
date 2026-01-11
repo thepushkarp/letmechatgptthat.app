@@ -2,7 +2,8 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-export const alt = "Let Me ChatGPT That For You";
+export const alt =
+  "Let Me ChatGPT That For You - Create shareable ChatGPT links";
 export const size = {
   width: 1200,
   height: 630,
@@ -84,8 +85,7 @@ export default async function Image() {
           lineHeight: 1.4,
         }}
       >
-        For people who find it easier to bother you than to ChatGPT it
-        themselves.
+        Create shareable links that show how easy it is to ask ChatGPT
       </div>
 
       {/* Accent line */}
