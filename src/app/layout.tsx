@@ -97,19 +97,11 @@ const jsonLdString = JSON.stringify({
     name: AUTHOR_NAME,
     url: AUTHOR_URL,
   },
-  datePublished: "2024-01-01",
-  dateModified: "2025-01-07",
+  datePublished: "2026-01-06",
+  dateModified: "2026-01-11",
   inLanguage: "en",
   keywords: SITE_KEYWORDS,
   sameAs: ["https://github.com/thepushkarp/letmechatgptthat.app", AUTHOR_URL],
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: `${SITE_URL}/?q={search_term_string}`,
-    },
-    "query-input": "required name=search_term_string",
-  },
 });
 
 export default function RootLayout({
