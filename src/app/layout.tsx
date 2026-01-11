@@ -7,8 +7,23 @@ const SITE_NAME = "Let Me ChatGPT That";
 const SITE_TITLE = "Let Me ChatGPT That For You";
 const SITE_DESCRIPTION =
   "Create shareable links that demonstrate how easy it is to ask ChatGPT. For people who find it easier to ask you than to ChatGPT it themselves.";
+const OG_DESCRIPTION =
+  "Create shareable links that show how easy it is to ask ChatGPT - for people who could have just asked ChatGPT themselves";
+const TWITTER_DESCRIPTION =
+  "Create shareable links that show how easy it is to ask ChatGPT";
 const AUTHOR_NAME = "Pushkar Patel";
 const AUTHOR_URL = "https://thepushkarp.com";
+const SITE_KEYWORDS = [
+  "ChatGPT",
+  "LMGTFY",
+  "AI",
+  "shareable links",
+  "let me google that",
+  "let me chatgpt that",
+  "chatgpt link generator",
+  "OpenAI",
+  "AI search",
+];
 
 export const viewport: Viewport = {
   themeColor: "#0d0d0d",
@@ -24,17 +39,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  keywords: [
-    "ChatGPT",
-    "LMGTFY",
-    "AI",
-    "shareable links",
-    "let me google that",
-    "let me chatgpt that",
-    "chatgpt link generator",
-    "OpenAI",
-    "AI search",
-  ],
+  keywords: SITE_KEYWORDS,
   authors: [{ name: AUTHOR_NAME, url: AUTHOR_URL }],
   creator: AUTHOR_NAME,
   publisher: SITE_NAME,
@@ -48,8 +53,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: SITE_TITLE,
-    description:
-      "Create shareable links that show how easy it is to ask ChatGPT - for people who could have just asked ChatGPT themselves",
+    description: OG_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
     locale: "en_US",
@@ -58,8 +62,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
-    description:
-      "Create shareable links that show how easy it is to ask ChatGPT",
+    description: TWITTER_DESCRIPTION,
     creator: "@thepushkarp",
   },
   robots: {
@@ -97,7 +100,7 @@ const jsonLdString = JSON.stringify({
   datePublished: "2024-01-01",
   dateModified: "2025-01-07",
   inLanguage: "en",
-  keywords: ["ChatGPT", "AI", "shareable links", "LMGTFY alternative"],
+  keywords: SITE_KEYWORDS,
   sameAs: ["https://github.com/thepushkarp/letmechatgptthat.app", AUTHOR_URL],
   potentialAction: {
     "@type": "SearchAction",
