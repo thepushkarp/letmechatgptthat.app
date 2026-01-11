@@ -2,23 +2,25 @@
 
 > For all those people who find it more convenient to bother you with their question rather than ChatGPT it themselves.
 
-A passive-aggressive link generator inspired by [Let Me Google That For You](https://lmgtfy.app/), but for ChatGPT. Generate a shareable link that animates typing a question into a ChatGPT mockup before redirecting the recipient to the real ChatGPT with their question pre-filled.
+A passive-aggressive link generator inspired by [Let Me Google That For You](https://lmgtfy.app/), but for ChatGPT. Generate a shareable short link that animates typing a question into a ChatGPT mockup before redirecting the recipient to the real ChatGPT with their question pre-filled.
 
 ## Features
 
-- **Realistic Typing Animation** — Variable-speed character-by-character typing that mimics human input (spaces type faster than letters)
+- **Short URLs** — Generate clean links like `letmechatgptthat.app/s/abc123` (powered by Upstash Redis)
+- **Realistic Typing Animation** — Variable-speed character-by-character typing that mimics human input
+- **Animated Cursor/Tap** — Desktop shows a moving cursor; mobile shows a tap indicator
 - **Authentic ChatGPT Mockup** — Browser chrome with macOS traffic lights, URL bar, and ChatGPT branding
-- **State Machine Animation** — Smooth progression through phases: typing → pause → sending → redirecting
-- **Shareable Links** — Generate URLs like `letmechatgptthat.app/?q=your+question` to share with friends
+- **State Machine Animation** — Smooth progression through phases: cursor movement → click → typing → send
+- **Interactive Countdown** — 5-second countdown with click or Enter to skip
 - **One-Click Copy** — Easily copy generated links to clipboard
-- **Skip Animation** — Recipients can skip straight to ChatGPT if they're impatient
-- **Mobile Responsive** — Works on all device sizes
+- **Mobile Responsive** — Device-aware animations for touch and desktop
 
 ## Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) with App Router
 - **React**: React 19
 - **Styling**: CSS Custom Properties + Tailwind CSS
+- **Database**: [Upstash Redis](https://upstash.com/) for URL shortening
 - **Language**: TypeScript
 - **Package Manager**: Yarn (with PnP)
 
@@ -28,6 +30,7 @@ A passive-aggressive link generator inspired by [Let Me Google That For You](htt
 
 - Node.js 18.17 or later
 - Yarn
+- Upstash Redis account (for URL shortening)
 
 ### Installation
 
@@ -39,11 +42,23 @@ cd letmechatgptthat.app
 # Install dependencies
 yarn install
 
+# Set up environment variables
+cp .env.example .env.local
+# Add your Upstash Redis credentials
+
 # Start development server
 yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+### Environment Variables
+
+| Variable                   | Description                         |
+| -------------------------- | ----------------------------------- |
+| `UPSTASH_REDIS_REST_URL`   | Upstash Redis REST URL              |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token            |
+| `NEXT_PUBLIC_BASE_URL`     | Base URL for short links (optional) |
 
 ### Available Scripts
 
@@ -59,61 +74,53 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ## How It Works
 
-### Two Main Views
+### URL Flow
 
-1. **Landing Page** (`/?q` parameter absent)
+1. **Landing Page** (`/`)
    - User types a question into a ChatGPT-styled input
-   - Generates a shareable URL with the query encoded
-   - Displays the link with a copy button
+   - Clicking "Generate Link" calls `/api/shorten` to create a short URL
+   - Displays the short link with a copy button
 
-2. **Animation View** (`/?q=your+question`)
-   - Displays a realistic ChatGPT browser mockup
-   - Animates typing the query character-by-character
-   - Shows a passive-aggressive "Was that so hard?" message
-   - Redirects to `chatgpt.com/?q=your+question` after animation completes
+2. **Animation View** (`/s/{code}`)
+   - Resolves the short code to the original query via Redis
+   - Shows animated cursor moving to input, clicking, typing the query
+   - Displays "Was that so hard?" message
+   - 5-second countdown, then redirects to `chatgpt.com/?q={query}`
 
 ### Animation State Machine
 
 ```
-typing → pause → sending → redirecting
-  │         │        │          │
-  ├─────────┴────────┴──────────┤
-  │     Cursor blinks during    │
-  │     typing and pause phases │
-  └─────────────────────────────┘
+idle → cursorToInput → clicking → typing → pause → cursorToSend → waiting → redirecting
 ```
+
+- **Desktop**: Animated macOS-style cursor
+- **Mobile**: Tap indicator with ripple effect
+- **Interruptible**: Click send button or press Enter during countdown
 
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── page.tsx        # Main page with routing logic
-│   ├── layout.tsx      # Root layout with metadata
-│   └── globals.css     # Design system (CSS variables, animations)
-└── components/
-    ├── AnimationView.tsx  # Typing animation + ChatGPT mockup
-    ├── ChatInput.tsx      # Auto-resizing textarea
-    ├── Header.tsx         # Site header with logo
-    └── LinkDisplay.tsx    # Generated link display with copy button
+│   ├── page.tsx              # Landing page + legacy ?q= support
+│   ├── layout.tsx            # Root layout with JSON-LD schema
+│   ├── globals.css           # Design system (CSS variables)
+│   ├── api/shorten/route.ts  # URL shortening API
+│   └── s/[code]/
+│       ├── page.tsx          # Short URL resolution
+│       └── opengraph-image.tsx
+├── components/
+│   ├── AnimationView.tsx     # Main animation (state machine)
+│   ├── AnimatedCursor.tsx    # Desktop cursor
+│   ├── TapIndicator.tsx      # Mobile tap indicator
+│   ├── ClickRipple.tsx       # Click effect
+│   ├── ChatInput.tsx         # Auto-resizing textarea
+│   └── LinkDisplay.tsx       # Copy-to-clipboard display
+├── hooks/
+│   └── useIsTouchDevice.ts   # Touch detection
+└── lib/
+    └── redis.ts              # Upstash Redis operations
 ```
-
-## Design System
-
-All styling uses CSS custom properties defined in `globals.css`:
-
-### Color Tokens
-
-- `--bg-primary`, `--bg-secondary`, `--bg-tertiary` — Background colors
-- `--text-primary`, `--text-secondary`, `--text-muted` — Text colors
-- `--accent` (`#10a37f`) — ChatGPT's signature green
-- `--border-subtle`, `--border-input` — Border colors
-
-### Other Tokens
-
-- Shadows: `--shadow-xs` through `--shadow-lg`, `--shadow-glow`
-- Border radii: `--radius-sm` through `--radius-full`
-- Transitions: `--ease-out-expo`, `--transition-fast/base/slow`
 
 ## Design Philosophy
 
@@ -121,7 +128,7 @@ This project's aesthetic prioritizes **faithful ChatGPT mimicry** — the joke l
 
 - **Typography**: Uses system fonts that match ChatGPT's style
 - **Color Discipline**: Colors are sampled directly from ChatGPT's dark mode
-- **Motion with Purpose**: Animations serve the joke (typing simulation, cursor blink, send button press)
+- **Motion with Purpose**: Animations serve the joke (cursor movement, typing, button interactions)
 - **Browser Mockup Fidelity**: Includes macOS traffic lights, URL bar, and ChatGPT branding
 
 ## Deployment
@@ -130,7 +137,7 @@ This is a standard Next.js app that can be deployed to any platform supporting N
 
 ### Vercel (Recommended)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/thepushkarp/letmechatgptthat.app)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/thepushkarp/letmechatgptthat.app&env=UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN)
 
 ### Other Platforms
 
