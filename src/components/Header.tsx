@@ -31,7 +31,7 @@ export function Header() {
           e.currentTarget.style.color = "var(--text-muted)";
         }}
       >
-        by @thepushkarp
+        by thepushkarp
       </a>
     </header>
   );

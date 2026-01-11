@@ -13,37 +13,67 @@ yarn format       # Format with Prettier
 yarn format:check # Check formatting
 ```
 
+**Environment Variables** (for URL shortening):
+
+- `UPSTASH_REDIS_REST_URL` - Upstash Redis REST URL
+- `UPSTASH_REDIS_REST_TOKEN` - Upstash Redis REST token
+- `NEXT_PUBLIC_BASE_URL` - Base URL for short links (optional, auto-detected)
+
 ## Architecture Overview
 
-This is a "Let Me Google That For You" style app for ChatGPT - a single-page Next.js 15 app that generates shareable links which animate typing a question into a ChatGPT mockup before redirecting to the real ChatGPT.
+This is a "Let Me Google That For You" style app for ChatGPT - a Next.js 15 app that generates shareable short URLs which animate typing a question into a ChatGPT mockup before redirecting to the real ChatGPT.
 
-### Two Main Views (in `src/app/page.tsx`)
+### URL Flow
 
-1. **LandingPage** - When visiting without `?q=` parameter
-   - User types a question in `ChatInput`
-   - Generates a shareable URL with the query encoded
-   - Shows the link in `LinkDisplay` for copying
+1. User enters question on landing page → generates short URL (`/s/{code}`)
+2. Recipient visits short URL → sees typing animation → redirects to `chatgpt.com/?q={query}`
 
-2. **AnimationView** - When visiting with `?q=<query>` parameter
-   - Displays a ChatGPT browser mockup
-   - Animates typing the query character-by-character (with realistic variable speed)
-   - Shows "Was that so hard?" message
-   - Redirects to `chatgpt.com/?q=<query>` after animation
+### Routes
 
-### Component Structure
+| Route          | Purpose                                                  |
+| -------------- | -------------------------------------------------------- |
+| `/`            | Landing page (no query) or legacy animation view (`?q=`) |
+| `/s/[code]`    | Short URL resolution → AnimationView                     |
+| `/api/shorten` | POST endpoint to create short URLs                       |
+
+### Key Files
 
 ```
 src/
 ├── app/
-│   ├── page.tsx        # Main page with LandingPage/AnimationView routing
-│   ├── layout.tsx      # Root layout with metadata
-│   └── globals.css     # Design system (CSS variables, animations)
-└── components/
-    ├── AnimationView.tsx  # Typing animation + ChatGPT mockup
-    ├── ChatInput.tsx      # Auto-resizing textarea with ChatGPT styling
-    ├── Header.tsx         # Site header with logo
-    └── LinkDisplay.tsx    # Generated link display with copy button
+│   ├── page.tsx              # Landing/legacy animation routing
+│   ├── layout.tsx            # Root layout + JSON-LD schema
+│   ├── globals.css           # Design system (CSS variables)
+│   ├── api/shorten/route.ts  # URL shortening API
+│   └── s/[code]/
+│       ├── page.tsx          # Short URL resolution
+│       └── opengraph-image.tsx  # Dynamic OG images
+├── components/
+│   ├── AnimationView.tsx     # Main animation (state machine)
+│   ├── AnimatedCursor.tsx    # Desktop cursor animation
+│   ├── TapIndicator.tsx      # Mobile tap animation
+│   ├── ClickRipple.tsx       # Click effect overlay
+│   ├── ChatInput.tsx         # Auto-resizing textarea
+│   └── LinkDisplay.tsx       # Copy-to-clipboard display
+├── hooks/
+│   └── useIsTouchDevice.ts   # Touch detection via media query
+└── lib/
+    └── redis.ts              # Upstash Redis operations
 ```
+
+### Animation State Machine
+
+`AnimationView` uses phases: `idle` → `cursorToInput` → `clicking` → `typing` → `pause` → `cursorToSend` → `waiting` → `redirecting`
+
+- Device-aware: shows cursor on desktop, tap indicator on touch devices
+- 5-second countdown during `waiting` phase before auto-redirect
+- User can click send button or press Enter to skip countdown
+
+### URL Shortening
+
+- Uses Upstash Redis with 30-day TTL
+- 6-character nanoid codes with collision detection
+- Max query length: 2000 characters
 
 ### Design System
 
