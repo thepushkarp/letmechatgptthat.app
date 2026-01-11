@@ -82,7 +82,7 @@ const jsonLdString = JSON.stringify({
   name: SITE_TITLE,
   description: SITE_DESCRIPTION,
   url: SITE_URL,
-  applicationCategory: "UtilitiesApplication",
+  applicationCategory: "UtilityApplication",
   operatingSystem: "Web Browser",
   offers: {
     "@type": "Offer",
