@@ -5,7 +5,6 @@ import "./globals.css";
 const SITE_URL = "https://letmechatgptthat.app";
 const SITE_NAME = "Let Me ChatGPT That";
 const SITE_TITLE = "Let Me ChatGPT That For You";
-const SITE_TITLE_SHORT = "LMCGTFY";
 const SITE_DESCRIPTION =
   "Create shareable links that demonstrate how easy it is to ask ChatGPT. For people who find it easier to ask you than to ChatGPT it themselves.";
 const AUTHOR_NAME = "Pushkar Patel";
@@ -21,7 +20,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_TITLE} - ${SITE_TITLE_SHORT}`,
+    default: SITE_TITLE,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -81,7 +80,6 @@ const jsonLdString = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: SITE_TITLE,
-  alternateName: SITE_TITLE_SHORT,
   description: SITE_DESCRIPTION,
   url: SITE_URL,
   applicationCategory: "UtilitiesApplication",
