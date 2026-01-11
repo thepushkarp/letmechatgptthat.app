@@ -12,7 +12,7 @@ const OG_DESCRIPTION =
 const TWITTER_DESCRIPTION =
   "Create shareable links that show how easy it is to ask ChatGPT";
 const AUTHOR_NAME = "Pushkar Patel";
-const AUTHOR_URL = "https://thepushkarp.com";
+const AUTHOR_URL = "https://thepushkarp.com/";
 const SITE_KEYWORDS = [
   "ChatGPT",
   "LMGTFY",
@@ -98,10 +98,10 @@ const jsonLdString = JSON.stringify({
     url: AUTHOR_URL,
   },
   datePublished: "2026-01-06",
-  dateModified: "2026-01-11",
+  dateModified: new Date().toISOString().split("T")[0],
   inLanguage: "en",
   keywords: SITE_KEYWORDS,
-  sameAs: ["https://github.com/thepushkarp/letmechatgptthat.app", AUTHOR_URL],
+  sameAs: [SITE_URL, AUTHOR_URL],
 });
 
 export default function RootLayout({
