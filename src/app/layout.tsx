@@ -5,8 +5,11 @@ import "./globals.css";
 const SITE_URL = "https://letmechatgptthat.app";
 const SITE_NAME = "Let Me ChatGPT That";
 const SITE_TITLE = "Let Me ChatGPT That For You";
+const SITE_TITLE_SHORT = "LMCGTFY";
 const SITE_DESCRIPTION =
-  "For all those people who find it more convenient to bother you with their question rather than ChatGPT it themselves.";
+  "Create shareable links that demonstrate how easy it is to ask ChatGPT. For people who find it easier to ask you than to ChatGPT it themselves.";
+const AUTHOR_NAME = "Pushkar Patel";
+const AUTHOR_URL = "https://thepushkarp.com";
 
 export const viewport: Viewport = {
   themeColor: "#0d0d0d",
@@ -18,23 +21,23 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: SITE_TITLE,
+    default: `${SITE_TITLE} - ${SITE_TITLE_SHORT}`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   keywords: [
     "ChatGPT",
-    "AI",
     "LMGTFY",
+    "AI",
+    "shareable links",
     "let me google that",
     "let me chatgpt that",
+    "chatgpt link generator",
     "OpenAI",
     "AI search",
-    "passive aggressive",
-    "share link",
   ],
-  authors: [{ name: SITE_NAME, url: SITE_URL }],
-  creator: SITE_NAME,
+  authors: [{ name: AUTHOR_NAME, url: AUTHOR_URL }],
+  creator: AUTHOR_NAME,
   publisher: SITE_NAME,
   formatDetection: {
     email: false,
@@ -46,7 +49,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
+    description:
+      "Create shareable links that show how easy it is to ask ChatGPT - for people who could have just asked ChatGPT themselves",
     url: SITE_URL,
     siteName: SITE_NAME,
     locale: "en_US",
@@ -55,7 +59,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
+    description:
+      "Create shareable links that show how easy it is to ask ChatGPT",
     creator: "@thepushkarp",
   },
   robots: {
@@ -75,20 +80,34 @@ export const metadata: Metadata = {
 const jsonLdString = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: SITE_NAME,
+  name: SITE_TITLE,
+  alternateName: SITE_TITLE_SHORT,
   description: SITE_DESCRIPTION,
   url: SITE_URL,
-  applicationCategory: "UtilityApplication",
-  operatingSystem: "Any",
+  applicationCategory: "UtilitiesApplication",
+  operatingSystem: "Web Browser",
   offers: {
     "@type": "Offer",
     price: "0",
     priceCurrency: "USD",
   },
-  creator: {
+  author: {
     "@type": "Person",
-    name: "thepushkarp",
-    url: "https://x.com/thepushkarp",
+    name: AUTHOR_NAME,
+    url: AUTHOR_URL,
+  },
+  datePublished: "2024-01-01",
+  dateModified: "2025-01-07",
+  inLanguage: "en",
+  keywords: ["ChatGPT", "AI", "shareable links", "LMGTFY alternative"],
+  sameAs: ["https://github.com/thepushkarp/letmechatgptthat.app", AUTHOR_URL],
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
   },
 });
 
