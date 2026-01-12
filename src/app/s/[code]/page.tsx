@@ -23,11 +23,6 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "Someone sent you a link",
       description: "Click to see what they want to show you",
     },
-    // Prevent search engines from indexing short URLs
-    robots: {
-      index: false,
-      follow: false,
-    },
   };
 }
 
