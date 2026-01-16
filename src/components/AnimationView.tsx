@@ -1,42 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 import Link from "next/link";
 import { Header } from "./Header";
 import { AnimatedCursor } from "./AnimatedCursor";
 import { TapIndicator } from "./TapIndicator";
 import { ClickRipple } from "./ClickRipple";
 import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
+import { useAnimationPhase } from "@/hooks/useAnimationPhase";
 
 interface AnimationViewProps {
   query: string;
 }
 
-type Phase =
-  | "idle" // Initial state, cursor not visible yet
-  | "cursorToInput" // Cursor moving to input box
-  | "clicking" // Click animation + ripple
-  | "typing" // Typing animation
-  | "pause" // Brief pause after typing
-  | "cursorToSend" // Cursor moving to send button
-  | "waiting" // Waiting for user click, countdown active
-  | "redirecting"; // Redirect in progress
-
 export function AnimationView({ query }: AnimationViewProps) {
-  // Existing state
-  const [displayedText, setDisplayedText] = useState("");
-  const [showTextCursor, setShowTextCursor] = useState(true);
-  const [isVisible, setIsVisible] = useState(false);
-
-  // New state for cursor animation
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [cursorPosition, setCursorPosition] = useState({ x: 80, y: 120 });
-  const [isClicking, setIsClicking] = useState(false);
-  const [showRipple, setShowRipple] = useState(false);
-  const [rippleOrigin, setRippleOrigin] = useState({ x: 0, y: 0 });
-  const [countdown, setCountdown] = useState(5);
-  const [inputFocused, setInputFocused] = useState(false);
-
   // Refs for element positions
   const mockupRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -44,11 +21,6 @@ export function AnimationView({ query }: AnimationViewProps) {
 
   // Touch device detection
   const isTouchDevice = useIsTouchDevice();
-
-  const redirectToChatGPT = useCallback(() => {
-    const encodedQuery = encodeURIComponent(query);
-    window.location.href = `https://chatgpt.com/?q=${encodedQuery}`;
-  }, [query]);
 
   // Helper to get element center relative to mockup
   const getElementCenter = useCallback(
@@ -64,148 +36,40 @@ export function AnimationView({ query }: AnimationViewProps) {
     []
   );
 
-  // Initial mount animation
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+  const getInputCenter = useCallback(
+    () => getElementCenter(inputRef),
+    [getElementCenter]
+  );
+  const getSendButtonCenter = useCallback(
+    () => getElementCenter(sendButtonRef),
+    [getElementCenter]
+  );
 
-  // Main phase transition logic
-  useEffect(() => {
-    // idle → cursorToInput (after mount animation)
-    if (phase === "idle" && isVisible) {
-      const timer = setTimeout(() => {
-        const inputCenter = getElementCenter(inputRef);
-        setCursorPosition(inputCenter);
-        setPhase("cursorToInput");
-      }, 600); // Wait for fade-in
-      return () => clearTimeout(timer);
-    }
+  const redirectToChatGPT = useCallback(() => {
+    const encodedQuery = encodeURIComponent(query);
+    window.location.href = `https://chatgpt.com/?q=${encodedQuery}`;
+  }, [query]);
 
-    // cursorToInput → clicking (after cursor arrives)
-    if (phase === "cursorToInput") {
-      const timer = setTimeout(() => {
-        setPhase("clicking");
-      }, 400); // 0.35s cursor movement + buffer
-      return () => clearTimeout(timer);
-    }
-
-    // clicking → typing (after click animation)
-    if (phase === "clicking") {
-      setIsClicking(true);
-      const inputCenter = getElementCenter(inputRef);
-      setRippleOrigin(inputCenter);
-      setShowRipple(true);
-      setInputFocused(true);
-
-      const timer = setTimeout(() => {
-        setIsClicking(false);
-        setShowRipple(false);
-        setPhase("typing");
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-
-    // typing (character by character)
-    if (phase === "typing") {
-      if (displayedText.length < query.length) {
-        const nextChar = query[displayedText.length];
-        const baseDelay = nextChar === " " ? 30 : 50;
-        const timeout = setTimeout(
-          () => {
-            setDisplayedText(query.slice(0, displayedText.length + 1));
-          },
-          baseDelay + Math.random() * 40
-        );
-        return () => clearTimeout(timeout);
-      } else {
-        const timeout = setTimeout(() => setPhase("pause"), 500);
-        return () => clearTimeout(timeout);
-      }
-    }
-
-    // pause → cursorToSend
-    if (phase === "pause") {
-      const timer = setTimeout(() => {
-        const sendCenter = getElementCenter(sendButtonRef);
-        setCursorPosition(sendCenter);
-        setPhase("cursorToSend");
-      }, 700);
-      return () => clearTimeout(timer);
-    }
-
-    // cursorToSend → waiting
-    if (phase === "cursorToSend") {
-      const timer = setTimeout(() => {
-        setCountdown(5); // Reset countdown
-        setPhase("waiting");
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-
-    // redirecting
-    if (phase === "redirecting") {
-      const timeout = setTimeout(redirectToChatGPT, 500);
-      return () => clearTimeout(timeout);
-    }
-  }, [
+  // Use the animation phase hook
+  const {
     phase,
     displayedText,
-    query,
+    showTextCursor,
+    cursorPosition,
+    isClicking,
+    showRipple,
+    rippleOrigin,
+    countdown,
+    inputFocused,
     isVisible,
-    redirectToChatGPT,
-    getElementCenter,
-  ]);
-
-  // Countdown timer during waiting phase
-  useEffect(() => {
-    if (phase === "waiting") {
-      const interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            setPhase("redirecting");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [phase]);
-
-  // Keyboard listener for Enter key during waiting phase
-  useEffect(() => {
-    if (phase === "waiting") {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Enter") {
-          setPhase("redirecting");
-        }
-      };
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
-    }
-  }, [phase]);
-
-  // Blinking text cursor with realistic timing
-  useEffect(() => {
-    if (phase === "typing" || phase === "pause") {
-      const interval = setInterval(() => {
-        setShowTextCursor((prev) => !prev);
-      }, 530);
-      return () => clearInterval(interval);
-    }
-  }, [phase]);
-
-  // Handle send button click
-  const handleSendClick = useCallback(() => {
-    if (phase === "waiting") {
-      setPhase("redirecting");
-    }
-  }, [phase]);
-
-  // Determine if cursor should be visible
-  const cursorVisible =
-    phase !== "idle" && phase !== "redirecting" && isVisible;
+    cursorVisible,
+    handleSendClick,
+  } = useAnimationPhase({
+    query,
+    getInputCenter,
+    getSendButtonCenter,
+    onRedirect: redirectToChatGPT,
+  });
 
   return (
     <main
