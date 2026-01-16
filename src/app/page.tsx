@@ -93,6 +93,9 @@ function LandingPage() {
     [generateLink]
   );
 
+  // Derived state for button enabled/disabled
+  const canGenerate = !!query.trim() && !isGenerating;
+
   return (
     <main
       className="min-h-screen flex flex-col"
@@ -156,8 +159,8 @@ function LandingPage() {
             <div className="flex flex-col items-center gap-3">
               <button
                 onClick={generateLink}
-                disabled={!query.trim() || isGenerating}
-                className={`generate-btn font-medium ${query.trim() && !isGenerating ? "enabled" : "disabled"}`}
+                disabled={!canGenerate}
+                className={`generate-btn font-medium ${canGenerate ? "enabled" : "disabled"}`}
                 style={{
                   padding: "14px 32px",
                   borderRadius: "var(--radius-full)",
