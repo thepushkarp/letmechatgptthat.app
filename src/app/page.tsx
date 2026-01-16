@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, Suspense } from "react";
+import { useState, useCallback, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChatInput } from "@/components/ChatInput";
 import { LinkDisplay } from "@/components/LinkDisplay";
@@ -14,11 +14,21 @@ function LandingPage() {
   const [isVisible, setIsVisible] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const copiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Trigger entrance animation
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 50);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Cleanup copied timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) {
+        clearTimeout(copiedTimeoutRef.current);
+      }
+    };
   }, []);
 
   const generateLink = useCallback(async () => {
@@ -52,10 +62,15 @@ function LandingPage() {
   const copyToClipboard = useCallback(async () => {
     if (!generatedLink) return;
 
+    // Clear any existing timeout
+    if (copiedTimeoutRef.current) {
+      clearTimeout(copiedTimeoutRef.current);
+    }
+
     try {
       await navigator.clipboard.writeText(generatedLink);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       const textArea = document.createElement("textarea");
       textArea.value = generatedLink;
@@ -64,7 +79,7 @@ function LandingPage() {
       document.execCommand("copy");
       document.body.removeChild(textArea);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     }
   }, [generatedLink]);
 
@@ -77,6 +92,9 @@ function LandingPage() {
     },
     [generateLink]
   );
+
+  // Derived state for button enabled/disabled
+  const canGenerate = !!query.trim() && !isGenerating;
 
   return (
     <main
@@ -141,37 +159,13 @@ function LandingPage() {
             <div className="flex flex-col items-center gap-3">
               <button
                 onClick={generateLink}
-                disabled={!query.trim() || isGenerating}
-                className="font-medium transition-all duration-200"
+                disabled={!canGenerate}
+                className={`generate-btn font-medium ${canGenerate ? "enabled" : "disabled"}`}
                 style={{
                   padding: "14px 32px",
-                  background:
-                    query.trim() && !isGenerating
-                      ? "var(--accent)"
-                      : "var(--bg-tertiary)",
-                  color:
-                    query.trim() && !isGenerating
-                      ? "white"
-                      : "var(--text-muted)",
                   borderRadius: "var(--radius-full)",
-                  cursor:
-                    query.trim() && !isGenerating ? "pointer" : "not-allowed",
                   fontSize: "15px",
                   opacity: isGenerating ? 0.7 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (query.trim() && !isGenerating) {
-                    e.currentTarget.style.background = "var(--accent-hover)";
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "var(--shadow-md)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (query.trim() && !isGenerating) {
-                    e.currentTarget.style.background = "var(--accent)";
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }
                 }}
               >
                 {isGenerating ? "Generating..." : "Generate Link"}

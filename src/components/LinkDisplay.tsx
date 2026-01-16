@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 interface LinkDisplayProps {
   link: string;
@@ -8,7 +8,11 @@ interface LinkDisplayProps {
   onCopy: () => void;
 }
 
-export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
+export const LinkDisplay = React.memo(function LinkDisplay({
+  link,
+  copied,
+  onCopy,
+}: LinkDisplayProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -93,27 +97,11 @@ export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
 
         <button
           onClick={onCopy}
-          className="flex items-center gap-2 whitespace-nowrap font-medium transition-all duration-200"
+          className={`copy-btn flex items-center gap-2 whitespace-nowrap font-medium ${copied ? "copied" : ""}`}
           style={{
             padding: "14px 20px",
             borderRadius: "var(--radius-lg)",
             fontSize: "14px",
-            background: copied ? "var(--accent-light)" : "var(--accent)",
-            color: copied ? "var(--accent)" : "white",
-            border: copied ? "1px solid var(--accent-light)" : "none",
-            transform: copied ? "none" : "translateY(0)",
-          }}
-          onMouseEnter={(e) => {
-            if (!copied) {
-              e.currentTarget.style.background = "var(--accent-hover)";
-              e.currentTarget.style.transform = "translateY(-1px)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!copied) {
-              e.currentTarget.style.background = "var(--accent)";
-              e.currentTarget.style.transform = "translateY(0)";
-            }
           }}
         >
           {copied ? (
@@ -199,4 +187,4 @@ export function LinkDisplay({ link, copied, onCopy }: LinkDisplayProps) {
       </div>
     </div>
   );
-}
+});
