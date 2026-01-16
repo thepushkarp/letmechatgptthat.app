@@ -564,14 +564,7 @@ export function AnimationView({ query }: AnimationViewProps) {
             >
               <button
                 onClick={redirectToChatGPT}
-                className="inline-flex items-center gap-1.5 text-sm transition-colors group"
-                style={{ color: "var(--text-muted)" }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--text-secondary)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--text-muted)")
-                }
+                className="text-link-muted inline-flex items-center gap-1.5 text-sm group"
               >
                 Skip animation
                 <svg

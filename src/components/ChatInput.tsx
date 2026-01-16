@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 
 interface ChatInputProps {
   value: string;
@@ -12,7 +12,7 @@ interface ChatInputProps {
   autoFocus?: boolean;
 }
 
-export function ChatInput({
+export const ChatInput = React.memo(function ChatInput({
   value,
   onChange,
   onSubmit,
@@ -127,4 +127,4 @@ export function ChatInput({
       </p>
     </div>
   );
-}
+});

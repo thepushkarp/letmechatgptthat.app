@@ -1,6 +1,7 @@
+import React from "react";
 import Link from "next/link";
 
-export function Header() {
+export const Header = React.memo(function Header() {
   return (
     <header
       className="w-full px-6 py-4 flex items-center justify-between"
@@ -20,19 +21,10 @@ export function Header() {
         href="https://x.com/thepushkarp"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-xs transition-all duration-150"
-        style={{
-          color: "var(--text-muted)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = "var(--text-secondary)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = "var(--text-muted)";
-        }}
+        className="text-link-muted text-xs"
       >
         by thepushkarp
       </a>
     </header>
   );
-}
+});
