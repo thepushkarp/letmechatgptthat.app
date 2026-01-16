@@ -397,14 +397,15 @@ export function AnimationView({ query }: AnimationViewProps) {
               )}
             </div>
 
-            {/* Animated cursor / tap indicator */}
-            {!isTouchDevice ? (
+            {/* Animated cursor / tap indicator - only render after device detection */}
+            {isTouchDevice === false && (
               <AnimatedCursor
                 position={cursorPosition}
                 isClicking={isClicking}
                 visible={cursorVisible}
               />
-            ) : (
+            )}
+            {isTouchDevice === true && (
               <TapIndicator
                 position={cursorPosition}
                 isClicking={isClicking}

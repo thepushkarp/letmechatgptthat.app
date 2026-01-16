@@ -2,8 +2,13 @@
 
 import { useState, useEffect } from "react";
 
-export function useIsTouchDevice(): boolean {
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+/**
+ * Detects if the device has a coarse pointer (touch screen).
+ * Returns `null` during SSR/initial render to prevent hydration mismatch,
+ * then resolves to `true` or `false` after mount.
+ */
+export function useIsTouchDevice(): boolean | null {
+  const [isTouchDevice, setIsTouchDevice] = useState<boolean | null>(null);
 
   useEffect(() => {
     // Check for coarse pointer (touch screens)
