@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { ChatInput } from "@/components/ChatInput";
 import { LinkDisplay } from "@/components/LinkDisplay";
 import { Header } from "@/components/Header";
@@ -202,6 +203,14 @@ function LandingPage() {
         style={{ borderTop: "1px solid var(--border-subtle)" }}
       >
         <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>
+          <Link
+            href="/faq"
+            className="transition-colors hover:underline"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            FAQ
+          </Link>
+          {" · "}
           This site is not affiliated with OpenAI.{" "}
           <a
             href="https://chatgpt.com"
