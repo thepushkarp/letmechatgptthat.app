@@ -36,6 +36,27 @@ const faqJsonLd = JSON.stringify({
   })),
 });
 
+function ChevronIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M5 7.5L10 12.5L15 7.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function FAQPage() {
   return (
     <main
@@ -103,26 +124,11 @@ export default function FAQPage() {
 
           {/* FAQ accordion */}
           <div className="space-y-3">
-            {faqItems.map((item, index) => (
-              <details key={index} className="faq-item group">
+            {faqItems.map((item) => (
+              <details key={item.question} className="faq-item group">
                 <summary className="faq-summary">
                   <span>{item.question}</span>
-                  <svg
-                    className="faq-chevron"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M5 7.5L10 12.5L15 7.5"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <ChevronIcon className="faq-chevron" />
                 </summary>
                 <div className="faq-answer">
                   <p>{item.answer}</p>
