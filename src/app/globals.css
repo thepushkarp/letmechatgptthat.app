@@ -653,7 +653,7 @@ body {
 }
 
 .faq-answer {
-  padding: 0 20px 16px;
+  padding: 4px 20px 16px;
   color: var(--text-secondary);
   line-height: 1.6;
 }
