@@ -18,7 +18,7 @@ export const Header = React.memo(function Header() {
 
       {/* Creator attribution */}
       <a
-        href="https://x.com/thepushkarp"
+        href="https://thepushkarp.com/"
         target="_blank"
         rel="noopener noreferrer"
         className="text-link-muted text-xs"
