@@ -5,12 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Development Commands
 
 ```bash
-yarn dev          # Start development server (Next.js)
-yarn build        # Production build
-yarn lint         # Run ESLint
-yarn lint:fix     # Fix ESLint issues
-yarn format       # Format with Prettier
-yarn format:check # Check formatting
+bun run dev          # Start development server (Next.js)
+bun run build        # Production build
+bun run lint         # Run ESLint
+bun run lint:fix     # Fix ESLint issues
+bun run format       # Format with Prettier
+bun run format:check # Check formatting
 ```
 
 **Environment Variables** (for URL shortening):

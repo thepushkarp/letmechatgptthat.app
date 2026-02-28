@@ -22,14 +22,14 @@ A passive-aggressive link generator inspired by [Let Me Google That For You](htt
 - **Styling**: CSS Custom Properties + Tailwind CSS
 - **Database**: [Upstash Redis](https://upstash.com/) for URL shortening
 - **Language**: TypeScript
-- **Package Manager**: Yarn (with PnP)
+- **Package Manager**: Bun
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18.17 or later
-- Yarn
+- Bun
 - Upstash Redis account (for URL shortening)
 
 ### Installation
@@ -40,14 +40,14 @@ git clone https://github.com/thepushkarp/letmechatgptthat.app.git
 cd letmechatgptthat.app
 
 # Install dependencies
-yarn install
+bun install
 
 # Set up environment variables
 cp .env.example .env.local
 # Add your Upstash Redis credentials
 
 # Start development server
-yarn dev
+bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the app.
@@ -62,15 +62,15 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ### Available Scripts
 
-| Command             | Description                     |
-| ------------------- | ------------------------------- |
-| `yarn dev`          | Start development server        |
-| `yarn build`        | Create production build         |
-| `yarn start`        | Start production server         |
-| `yarn lint`         | Run ESLint                      |
-| `yarn lint:fix`     | Fix ESLint issues automatically |
-| `yarn format`       | Format code with Prettier       |
-| `yarn format:check` | Check code formatting           |
+| Command                | Description                     |
+| ---------------------- | ------------------------------- |
+| `bun run dev`          | Start development server        |
+| `bun run build`        | Create production build         |
+| `bun run start`        | Start production server         |
+| `bun run lint`         | Run ESLint                      |
+| `bun run lint:fix`     | Fix ESLint issues automatically |
+| `bun run format`       | Format code with Prettier       |
+| `bun run format:check` | Check code formatting           |
 
 ## How It Works
 
@@ -143,10 +143,10 @@ This is a standard Next.js app that can be deployed to any platform supporting N
 
 ```bash
 # Build for production
-yarn build
+bun run build
 
 # Start production server
-yarn start
+bun run start
 ```
 
 ## Contributing
