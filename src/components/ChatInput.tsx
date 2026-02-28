@@ -95,7 +95,6 @@ export const ChatInput = React.memo(function ChatInput({
           style={{
             height: "auto",
             minHeight: "24px",
-            fontFamily: "var(--font-mono)",
           }}
         />
 
@@ -116,7 +115,7 @@ export const ChatInput = React.memo(function ChatInput({
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M5 12h14M12 5l7 7-7 7" />
+            <path d="M12 19V5m0 0l-6 6m6-6l6 6" />
           </svg>
         </button>
       </div>

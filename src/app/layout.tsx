@@ -1,6 +1,20 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, Victor_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const victorMono = Victor_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
+  weight: ["400", "500"],
+});
 
 const SITE_URL = "https://letmechatgptthat.app";
 const SITE_NAME = "Let Me ChatGPT That";
@@ -112,16 +126,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Victor+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
         <Script
           id="json-ld"
           type="application/ld+json"
@@ -130,7 +134,9 @@ export default function RootLayout({
           {jsonLdString}
         </Script>
       </head>
-      <body className="antialiased">{children}</body>
+      <body className={`${inter.variable} ${victorMono.variable} antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

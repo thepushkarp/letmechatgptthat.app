@@ -23,7 +23,7 @@ export function AnimatedCursor({
         top: position.y,
         transform: isClicking ? "scale(0.85)" : "scale(1)",
         transition:
-          "transform 0.1s ease-out, left 0.35s ease-out, top 0.35s ease-out",
+          "transform 0.1s ease-out, left 0.35s cubic-bezier(0.16, 1, 0.3, 1), top 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
         opacity: visible ? 1 : 0,
         pointerEvents: "none",
         zIndex: 1000,

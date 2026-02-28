@@ -7,13 +7,12 @@ export const Header = React.memo(function Header() {
       className="w-full px-6 py-4 flex items-center justify-between"
       style={{ borderBottom: "1px solid var(--border-subtle)" }}
     >
-      <Link href="/" className="transition-opacity hover:opacity-80">
-        <span
-          className="font-semibold tracking-tight"
-          style={{ color: "var(--text-primary)", fontSize: "18px" }}
-        >
-          LetMeChatGPTThat
-        </span>
+      <Link
+        href="/"
+        className="transition-colors font-semibold tracking-tight hover:text-[var(--text-secondary)]"
+        style={{ color: "var(--text-primary)", fontSize: "18px" }}
+      >
+        LetMeChatGPTThat
       </Link>
 
       {/* Creator attribution */}

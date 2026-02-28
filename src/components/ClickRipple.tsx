@@ -18,7 +18,7 @@ export function ClickRipple({ origin, active }: ClickRippleProps) {
         width: 48,
         height: 48,
         borderRadius: "50%",
-        background: "rgba(116, 170, 156, 0.3)",
+        background: "rgba(16, 163, 127, 0.3)",
         pointerEvents: "none",
         zIndex: 999,
       }}

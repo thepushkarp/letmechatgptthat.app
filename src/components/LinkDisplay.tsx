@@ -24,7 +24,9 @@ export const LinkDisplay = React.memo(function LinkDisplay({
   return (
     <div
       className={`space-y-5 p-6 transition-all duration-500 ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        isVisible
+          ? "opacity-100 translate-y-0 scale-100"
+          : "opacity-0 translate-y-2 scale-[0.98]"
       }`}
       style={{
         background: "var(--surface-primary)",

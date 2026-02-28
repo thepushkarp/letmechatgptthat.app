@@ -22,7 +22,7 @@ export function TapIndicator({
         height: 32,
         transform: isClicking ? "scale(0.9) translateY(4px)" : "scale(1)",
         transition:
-          "transform 0.15s ease-out, left 0.35s ease-out, top 0.35s ease-out",
+          "transform 0.15s ease-out, left 0.35s cubic-bezier(0.16, 1, 0.3, 1), top 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
         opacity: visible ? 1 : 0,
         pointerEvents: "none",
         zIndex: 1000,

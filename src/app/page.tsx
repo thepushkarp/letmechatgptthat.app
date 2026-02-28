@@ -161,14 +161,23 @@ function LandingPage() {
               <button
                 onClick={generateLink}
                 disabled={!canGenerate}
-                className={`generate-btn font-medium ${canGenerate ? "enabled" : "disabled"}`}
+                className={`generate-btn font-medium inline-flex items-center gap-2 ${canGenerate ? "enabled" : "disabled"}`}
                 style={{
                   padding: "14px 32px",
                   borderRadius: "var(--radius-full)",
                   fontSize: "15px",
-                  opacity: isGenerating ? 0.7 : 1,
                 }}
               >
+                {isGenerating && (
+                  <span
+                    className="w-4 h-4 rounded-full animate-spin"
+                    style={{
+                      border: "2px solid currentColor",
+                      borderTopColor: "transparent",
+                      display: "inline-block",
+                    }}
+                  />
+                )}
                 {isGenerating ? "Generating..." : "Generate Link"}
               </button>
               {error && (
@@ -237,7 +246,7 @@ function LoadingSpinner() {
       <div className="relative">
         <div
           className="w-10 h-10 rounded-full"
-          style={{ border: "2px solid rgba(16, 163, 127, 0.3)" }}
+          style={{ border: "2px solid var(--accent-light)" }}
         />
         <div
           className="absolute inset-0 w-10 h-10 rounded-full animate-spin"
