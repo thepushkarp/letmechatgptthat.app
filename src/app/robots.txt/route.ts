@@ -1,4 +1,5 @@
-const BASE_URL = "https://letmechatgptthat.app";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL ?? "https://letmechatgptthat.app";
 
 export async function GET() {
   const content = `User-agent: *
