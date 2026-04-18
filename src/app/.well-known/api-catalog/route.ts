@@ -23,9 +23,15 @@ export async function GET(request: NextRequest) {
     ],
   };
 
+  const linkHeader = [
+    `<${baseUrl}/.well-known/openapi.json>; rel="service-desc"; anchor="${baseUrl}/api/shorten"; type="application/openapi+json"`,
+    `<${baseUrl}/llms.txt>; rel="service-doc"; anchor="${baseUrl}/api/shorten"; type="text/plain"`,
+  ].join(", ");
+
   return new Response(JSON.stringify(linkset, null, 2), {
     headers: {
       "Content-Type": "application/linkset+json",
+      Link: linkHeader,
     },
   });
 }
