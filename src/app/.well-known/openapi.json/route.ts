@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    request.headers.get("origin") ||
-    `https://${request.headers.get("host")}`;
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  const proto = request.headers.get("x-forwarded-proto") ?? "https";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? `${proto}://${host}`;
 
   const spec = {
     openapi: "3.1.0",
