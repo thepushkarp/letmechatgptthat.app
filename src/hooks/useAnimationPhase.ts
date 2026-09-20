@@ -179,7 +179,7 @@ export function useAnimationPhase({
   useEffect(() => {
     if (phase !== "waiting") return;
     const onKeyDown = (event: KeyboardEvent) => {
-      // Focused links and buttons retain their own Enter action.
+      // The read-only mock question has no Enter action; links and buttons keep theirs.
       if (
         event.key === "Enter" &&
         !event.isComposing &&
@@ -189,7 +189,9 @@ export function useAnimationPhase({
         !event.ctrlKey &&
         !event.altKey &&
         (event.target === document.body ||
-          event.target === document.documentElement)
+          event.target === document.documentElement ||
+          (event.target instanceof Element &&
+            event.target.matches('[role="textbox"][aria-readonly="true"]')))
       ) {
         event.preventDefault();
         dispatch({ type: "phase", phase: "redirecting" });

@@ -198,6 +198,26 @@ test("reduced motion, long text, skip, and keyboard navigation", async ({
     "data-test-redirect",
     "https://chatgpt.com/?q=skip"
   );
+  await page.goto("/?q=focused-question");
+  await expect(page.locator(".playback-layout")).toHaveAttribute(
+    "data-phase",
+    "waiting"
+  );
+  const mockQuestion = page.getByRole("textbox", {
+    name: "Question",
+    exact: true,
+  });
+  await mockQuestion.press("Shift+Enter");
+  await expect(page.locator(".playback-layout")).toHaveAttribute(
+    "data-phase",
+    "waiting"
+  );
+  await mockQuestion.press("Enter");
+  await page.clock.runFor(300);
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-test-redirect",
+    "https://chatgpt.com/?q=focused-question"
+  );
 });
 
 test("system themes, FAQ, expired link, icons, and narrow reflow", async ({

@@ -11,6 +11,7 @@ bun run lint         # Run ESLint
 bun run lint:fix     # Fix ESLint issues
 bun run format       # Format with Prettier
 bun run format:check # Check formatting
+bun run test         # Run isolated Playwright browser checks
 ```
 
 **Environment Variables** (for URL shortening):
@@ -68,6 +69,9 @@ src/
 - Device-aware: shows cursor on desktop, tap indicator on touch devices
 - 5-second countdown during `waiting` phase before auto-redirect
 - User can click send button or press Enter to skip countdown
+- Enter also skips while the read-only simulated question has focus; focused links and buttons retain their native actions.
+- Reduced motion displays the completed question immediately and starts the countdown.
+- Derive the recipient's three-step guide from these phases rather than separate timers.
 
 ### URL Shortening
 
@@ -79,12 +83,14 @@ src/
 
 All styling uses CSS custom properties defined in `globals.css`:
 
-- Color tokens: `--bg-*`, `--text-*`, `--border-*`, `--accent-*`, `--surface-*`
-- Shadows: `--shadow-xs` through `--shadow-lg`, `--shadow-glow`
-- Radii: `--radius-sm` through `--radius-full`
-- Transitions: `--ease-out-expo`, `--transition-fast/base/slow`
+- Color tokens: `--bg-*`, `--text-*`, `--border-*`, `--button-*`, `--error`, `--focus`
+- Browser-frame shadow: `--shadow-frame`
+- Shared composer, button, and status classes keep both flows consistent.
+- Cursor easing: `--ease-out-expo`
 
-The design mimics ChatGPT's dark mode aesthetic (accent color: `#10a37f`).
+Use restrained neutral surfaces in both system light and dark themes via
+`prefers-color-scheme`, with no theme switch. Theme changes must apply without a
+reload or theme flash. The green `#10a37f` background is retained only in the app icons.
 
 ## Design Philosophy
 
@@ -92,21 +98,23 @@ This project's aesthetic is **faithful ChatGPT mimicry** - the joke lands harder
 
 ### Aesthetic Direction: Refined Authenticity
 
-- **Tone**: Polished, professional dark UI that could pass as the real ChatGPT at first glance
+- **Tone**: Polished, restrained UI that follows the system light or dark theme
 - **Differentiation**: The humor comes from the realistic typing animation and passive-aggressive "Was that so hard?" message - not from flashy design departures
 - **Restraint**: This is intentionally NOT a place for creative experimentation. Match ChatGPT's exact patterns.
 
 ### Design Principles for This Project
 
-1. **Typography**: Use Söhne (ChatGPT's actual font) with system font fallbacks. No decorative or distinctive fonts - authenticity is the goal.
+1. **Typography**: Use the existing Inter font with system fallbacks. No decorative fonts.
 
-2. **Color Discipline**: Stick to the existing CSS variable palette (`--bg-primary: #0d0d0d`, `--accent: #10a37f`). These are sampled from actual ChatGPT. Don't introduce new colors.
+2. **Color Discipline**: Use the light/dark semantic tokens in `globals.css`. Keep controls neutral; avoid green accents, glows, and decorative gradients.
 
-3. **Motion with Purpose**: Animations serve the joke (typing simulation, cursor blink, send button press). Use `--ease-out-expo` for smooth, premium-feeling transitions. Avoid gratuitous effects.
+3. **Motion with Purpose**: Preserve typing, cursor/tap feedback, and the countdown. Respect reduced motion and avoid entrance effects or button lifts.
 
-4. **Spatial Matching**: ChatGPT uses generous padding, rounded corners (`--radius-2xl` for inputs), and careful vertical rhythm. Mirror these patterns exactly.
+4. **Spatial Matching**: Use generous padding, consistent rounded corners, and shared composer styles. Keep long questions scrollable without displacing composer controls.
 
-5. **Browser Mockup Fidelity**: The `AnimationView` includes macOS traffic lights, URL bar, and ChatGPT branding. These details sell the illusion.
+5. **Browser Mockup Fidelity**: Keep desktop traffic lights and the `chatgpt.com` URL bar, with compact chrome on mobile. Avoid duplicate ChatGPT logos or headings. The recipient guide reads “You could’ve just…” with steps beside the frame on desktop and the current step above it on mobile.
+
+6. **Concise Copy**: Keep essential actions, the joke, FAQ access, and brief affiliation text. Put creator attribution in the footer. App icons contain only the question mark on the existing background.
 
 ### What to Avoid
 
@@ -115,11 +123,9 @@ This project's aesthetic is **faithful ChatGPT mimicry** - the joke lands harder
 - Playful or whimsical UI elements (the humor is subtle, not cartoonish)
 - Over-engineering animations (the typing effect is the star; supporting animations should be invisible)
 
-### Animation System
+### Browser Verification
 
-`AnimationView` uses a state machine with phases: `typing` → `pause` → `sending` → `redirecting`
-
-- Typing speed varies by character (spaces are faster)
-- Cursor blink animation during typing/pause
-- Visual feedback on send button press
-- Spinner during redirect
+Use `node tests/serve.mjs` for a disposable source snapshot with mocked Redis and
+captured redirect destinations. It must not use production storage or submit test
+questions to ChatGPT. Restart the snapshot after source changes. The production
+redirect remains `https://chatgpt.com/?q=` followed by the encoded question.
