@@ -1,130 +1,68 @@
 "use client";
 
 import { useReducer, useEffect, useCallback } from "react";
+import { useReducedMotion } from "./useReducedMotion";
 
-// Animation phases
 export type Phase =
-  | "idle" // Initial state, cursor not visible yet
-  | "cursorToInput" // Cursor moving to input box
-  | "clicking" // Click animation + ripple
-  | "typing" // Typing animation
-  | "pause" // Brief pause after typing
-  | "cursorToSend" // Cursor moving to send button
-  | "waiting" // Waiting for user click, countdown active
-  | "redirecting"; // Redirect in progress
-
-// State shape
+  | "idle"
+  | "cursorToInput"
+  | "clicking"
+  | "typing"
+  | "pause"
+  | "cursorToSend"
+  | "waiting"
+  | "redirecting";
+type Point = { x: number; y: number };
 interface AnimationState {
   phase: Phase;
   displayedText: string;
-  showTextCursor: boolean;
-  cursorPosition: { x: number; y: number };
-  isClicking: boolean;
-  showRipple: boolean;
-  rippleOrigin: { x: number; y: number };
+  cursorPosition: Point;
+  rippleOrigin: Point;
   countdown: number;
-  inputFocused: boolean;
-  isVisible: boolean;
 }
-
-// Action types
-type AnimationAction =
-  | { type: "MOUNT_COMPLETE" }
-  | { type: "MOVE_TO_INPUT"; position: { x: number; y: number } }
-  | { type: "START_CLICKING"; rippleOrigin: { x: number; y: number } }
-  | { type: "FINISH_CLICKING" }
-  | { type: "TYPE_CHARACTER"; text: string }
-  | { type: "FINISH_TYPING" }
-  | { type: "MOVE_TO_SEND"; position: { x: number; y: number } }
-  | { type: "START_WAITING" }
-  | { type: "COUNTDOWN_TICK" }
-  | { type: "START_REDIRECT" }
-  | { type: "TOGGLE_CURSOR" };
+type Action =
+  | { type: "phase"; phase: Phase; position?: Point }
+  | { type: "type"; text: string }
+  | { type: "reduceMotion"; text: string }
+  | { type: "tick" };
 
 const initialState: AnimationState = {
   phase: "idle",
   displayedText: "",
-  showTextCursor: true,
   cursorPosition: { x: 80, y: 120 },
-  isClicking: false,
-  showRipple: false,
   rippleOrigin: { x: 0, y: 0 },
   countdown: 5,
-  inputFocused: false,
-  isVisible: false,
 };
 
-function animationReducer(
-  state: AnimationState,
-  action: AnimationAction
-): AnimationState {
+function reducer(state: AnimationState, action: Action): AnimationState {
   switch (action.type) {
-    case "MOUNT_COMPLETE":
-      return { ...state, isVisible: true };
-
-    case "MOVE_TO_INPUT":
+    case "phase":
       return {
         ...state,
-        phase: "cursorToInput",
-        cursorPosition: action.position,
+        phase: action.phase,
+        cursorPosition: action.position ?? state.cursorPosition,
+        rippleOrigin:
+          action.phase === "clicking"
+            ? (action.position ?? state.cursorPosition)
+            : state.rippleOrigin,
       };
-
-    case "START_CLICKING":
-      return {
-        ...state,
-        phase: "clicking",
-        isClicking: true,
-        showRipple: true,
-        rippleOrigin: action.rippleOrigin,
-        inputFocused: true,
-      };
-
-    case "FINISH_CLICKING":
-      return {
-        ...state,
-        phase: "typing",
-        isClicking: false,
-        showRipple: false,
-      };
-
-    case "TYPE_CHARACTER":
+    case "type":
       return { ...state, displayedText: action.text };
-
-    case "FINISH_TYPING":
-      return { ...state, phase: "pause" };
-
-    case "MOVE_TO_SEND":
+    case "reduceMotion":
+      return { ...state, displayedText: action.text, phase: "waiting" };
+    case "tick":
       return {
         ...state,
-        phase: "cursorToSend",
-        cursorPosition: action.position,
+        countdown: state.countdown - 1,
+        phase: state.countdown <= 1 ? "redirecting" : "waiting",
       };
-
-    case "START_WAITING":
-      return { ...state, phase: "waiting", countdown: 5 };
-
-    case "COUNTDOWN_TICK":
-      const newCountdown = state.countdown - 1;
-      if (newCountdown <= 0) {
-        return { ...state, phase: "redirecting", countdown: 0 };
-      }
-      return { ...state, countdown: newCountdown };
-
-    case "START_REDIRECT":
-      return { ...state, phase: "redirecting" };
-
-    case "TOGGLE_CURSOR":
-      return { ...state, showTextCursor: !state.showTextCursor };
-
-    default:
-      return state;
   }
 }
 
 interface UseAnimationPhaseOptions {
   query: string;
-  getInputCenter: () => { x: number; y: number };
-  getSendButtonCenter: () => { x: number; y: number };
+  getInputCenter: () => Point;
+  getSendButtonCenter: () => Point;
   onRedirect: () => void;
 }
 
@@ -134,149 +72,154 @@ export function useAnimationPhase({
   getSendButtonCenter,
   onRedirect,
 }: UseAnimationPhaseOptions) {
-  const [state, dispatch] = useReducer(animationReducer, initialState);
-  const { phase, displayedText, isVisible } = state;
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const reducedMotion = useReducedMotion();
+  const { phase, displayedText } = state;
 
-  // Initial mount animation
   useEffect(() => {
-    const timer = setTimeout(() => dispatch({ type: "MOUNT_COMPLETE" }), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Phase: idle → cursorToInput
-  useEffect(() => {
-    if (phase === "idle" && isVisible) {
-      const timer = setTimeout(() => {
-        dispatch({ type: "MOVE_TO_INPUT", position: getInputCenter() });
-      }, 600);
-      return () => clearTimeout(timer);
+    if (reducedMotion && phase !== "waiting" && phase !== "redirecting") {
+      dispatch({ type: "reduceMotion", text: query });
     }
-  }, [phase, isVisible, getInputCenter]);
+  }, [reducedMotion, phase, query]);
 
-  // Phase: cursorToInput → clicking
   useEffect(() => {
-    if (phase === "cursorToInput") {
-      const timer = setTimeout(() => {
-        dispatch({
-          type: "START_CLICKING",
-          rippleOrigin: getInputCenter(),
-        });
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [phase, getInputCenter]);
-
-  // Phase: clicking → typing
-  useEffect(() => {
-    if (phase === "clicking") {
-      const timer = setTimeout(() => {
-        dispatch({ type: "FINISH_CLICKING" });
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [phase]);
-
-  // Phase: typing (character by character)
-  useEffect(() => {
-    if (phase === "typing") {
-      if (displayedText.length < query.length) {
-        const nextChar = query[displayedText.length];
-        const baseDelay = nextChar === " " ? 30 : 50;
-        const timeout = setTimeout(
-          () => {
+    // Resolve the media query before starting, so reduced-motion users never see a partial animation.
+    if (
+      reducedMotion === null ||
+      (reducedMotion && phase !== "waiting" && phase !== "redirecting")
+    )
+      return;
+    let timer: ReturnType<typeof setTimeout>;
+    switch (phase) {
+      case "idle":
+        timer = setTimeout(
+          () =>
             dispatch({
-              type: "TYPE_CHARACTER",
-              text: query.slice(0, displayedText.length + 1),
-            });
-          },
-          baseDelay + Math.random() * 40
+              type: "phase",
+              phase: "cursorToInput",
+              position: getInputCenter(),
+            }),
+          600
         );
-        return () => clearTimeout(timeout);
-      } else {
-        const timeout = setTimeout(
-          () => dispatch({ type: "FINISH_TYPING" }),
-          500
+        break;
+      case "cursorToInput":
+        timer = setTimeout(
+          () =>
+            dispatch({
+              type: "phase",
+              phase: "clicking",
+              position: getInputCenter(),
+            }),
+          400
         );
-        return () => clearTimeout(timeout);
-      }
-    }
-  }, [phase, displayedText, query]);
-
-  // Phase: pause → cursorToSend
-  useEffect(() => {
-    if (phase === "pause") {
-      const timer = setTimeout(() => {
-        dispatch({ type: "MOVE_TO_SEND", position: getSendButtonCenter() });
-      }, 700);
-      return () => clearTimeout(timer);
-    }
-  }, [phase, getSendButtonCenter]);
-
-  // Phase: cursorToSend → waiting
-  useEffect(() => {
-    if (phase === "cursorToSend") {
-      const timer = setTimeout(() => {
-        dispatch({ type: "START_WAITING" });
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [phase]);
-
-  // Phase: redirecting → actual redirect
-  useEffect(() => {
-    if (phase === "redirecting") {
-      const timeout = setTimeout(onRedirect, 500);
-      return () => clearTimeout(timeout);
-    }
-  }, [phase, onRedirect]);
-
-  // Countdown timer during waiting phase
-  useEffect(() => {
-    if (phase === "waiting") {
-      const interval = setInterval(() => {
-        dispatch({ type: "COUNTDOWN_TICK" });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [phase]);
-
-  // Keyboard listener for Enter key during waiting phase
-  useEffect(() => {
-    if (phase === "waiting") {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Enter") {
-          dispatch({ type: "START_REDIRECT" });
+        break;
+      case "clicking":
+        timer = setTimeout(
+          () => dispatch({ type: "phase", phase: "typing" }),
+          300
+        );
+        break;
+      case "typing":
+        if (displayedText.length < query.length) {
+          // Consume whole code points so emoji are never rendered as broken surrogate halves.
+          const next = String.fromCodePoint(
+            query.codePointAt(displayedText.length)!
+          );
+          timer = setTimeout(
+            () => dispatch({ type: "type", text: displayedText + next }),
+            (next === " " ? 30 : 50) + Math.random() * 40
+          );
+        } else {
+          timer = setTimeout(
+            () => dispatch({ type: "phase", phase: "pause" }),
+            500
+          );
         }
-      };
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
+        break;
+      case "pause":
+        timer = setTimeout(
+          () =>
+            dispatch({
+              type: "phase",
+              phase: "cursorToSend",
+              position: getSendButtonCenter(),
+            }),
+          700
+        );
+        break;
+      case "cursorToSend":
+        timer = setTimeout(
+          () => dispatch({ type: "phase", phase: "waiting" }),
+          400
+        );
+        break;
+      case "waiting":
+        return;
+      case "redirecting":
+        timer = setTimeout(onRedirect, 300);
+        break;
     }
-  }, [phase]);
+    return () => clearTimeout(timer);
+  }, [
+    phase,
+    displayedText,
+    query,
+    reducedMotion,
+    getInputCenter,
+    getSendButtonCenter,
+    onRedirect,
+  ]);
 
-  // Blinking text cursor
   useEffect(() => {
-    if (phase === "typing" || phase === "pause") {
-      const interval = setInterval(() => {
-        dispatch({ type: "TOGGLE_CURSOR" });
-      }, 530);
-      return () => clearInterval(interval);
-    }
+    if (phase !== "waiting") return;
+    const timer = setInterval(() => dispatch({ type: "tick" }), 1000);
+    return () => clearInterval(timer);
   }, [phase]);
 
-  // Action handlers
+  useEffect(() => {
+    if (phase !== "waiting") return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      // The read-only mock question has no Enter action; links and buttons keep theirs.
+      if (
+        event.key === "Enter" &&
+        !event.isComposing &&
+        !event.repeat &&
+        !event.shiftKey &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        (event.target === document.body ||
+          event.target === document.documentElement ||
+          (event.target instanceof Element &&
+            event.target.matches('[role="textbox"][aria-readonly="true"]')))
+      ) {
+        event.preventDefault();
+        dispatch({ type: "phase", phase: "redirecting" });
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [phase]);
+
+  const openChatGPT = useCallback(
+    () => dispatch({ type: "phase", phase: "redirecting" }),
+    []
+  );
   const handleSendClick = useCallback(() => {
-    if (phase === "waiting") {
-      dispatch({ type: "START_REDIRECT" });
-    }
-  }, [phase]);
-
-  // Computed values
-  const cursorVisible =
-    phase !== "idle" && phase !== "redirecting" && isVisible;
+    if (phase === "waiting") openChatGPT();
+  }, [phase, openChatGPT]);
 
   return {
     ...state,
-    cursorVisible,
+    reducedMotion,
+    cursorVisible:
+      reducedMotion === false &&
+      phase !== "idle" &&
+      phase !== "waiting" &&
+      phase !== "redirecting",
+    isClicking: phase === "clicking",
+    showRipple: reducedMotion === false && phase === "clicking",
     handleSendClick,
+    openChatGPT,
   };
 }

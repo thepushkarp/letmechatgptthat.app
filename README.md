@@ -71,6 +71,20 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 | `bun run lint:fix`     | Fix ESLint issues automatically |
 | `bun run format`       | Format code with Prettier       |
 | `bun run format:check` | Check code formatting           |
+| `bun run test`         | Run isolated browser checks     |
+
+### UI verification
+
+Install Chromium with `bunx playwright install chromium`, then run `bun run test`.
+The suite checks desktop and mobile layouts in both system themes. It starts an
+isolated source snapshot on port 4173 with an in-memory Redis fixture and records
+redirect destinations instead of opening ChatGPT. Stop any existing server on
+that port first; tests deliberately refuse to reuse an unknown server.
+
+For the same safe manual preview, run `node tests/serve.mjs`. The fixture link is
+`http://127.0.0.1:4173/s/fixture`. Restart the preview after editing source files.
+`node tests/serve.mjs --build` checks the unmodified production build without
+loading local dotenv files.
 
 ## How It Works
 
@@ -78,7 +92,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 1. **Landing Page** (`/`)
    - User types a question into a ChatGPT-styled input
-   - Clicking "Generate Link" calls `/api/shorten` to create a short URL
+   - Pressing Enter or the "Create link" arrow calls `/api/shorten` to create a short URL
    - Displays the short link with a copy button
 
 2. **Animation View** (`/s/{code}`)
@@ -126,8 +140,8 @@ src/
 
 This project's aesthetic prioritizes **faithful ChatGPT mimicry** — the joke lands harder when the mockup feels authentic.
 
-- **Typography**: Uses system fonts that match ChatGPT's style
-- **Color Discipline**: Colors are sampled directly from ChatGPT's dark mode
+- **Typography**: Inter with system font fallbacks
+- **Color Discipline**: Neutral surfaces follow the system light or dark theme
 - **Motion with Purpose**: Animations serve the joke (cursor movement, typing, button interactions)
 - **Browser Mockup Fidelity**: Includes macOS traffic lights, URL bar, and ChatGPT branding
 

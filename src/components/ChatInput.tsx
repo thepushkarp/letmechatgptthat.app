@@ -1,129 +1,120 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect, useId } from "react";
+import { SendIcon } from "./SendIcon";
+
+export const MAX_QUERY_LENGTH = 2000;
 
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  autoFocus?: boolean;
+  isSubmitting: boolean;
+  error: string | null;
 }
 
-export const ChatInput = React.memo(function ChatInput({
+export function ChatInput({
   value,
   onChange,
   onSubmit,
-  onKeyDown,
-  placeholder = "Ask anything...",
-  disabled = false,
-  autoFocus = true,
+  isSubmitting,
+  error,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const composingRef = useRef(false);
+  const id = useId();
+  const length = value.trim().length;
+  const tooLong = length > MAX_QUERY_LENGTH;
+  const message = tooLong ? "Keep your question to 2,000 characters." : error;
+  const showCount = length >= 1800;
 
-  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+      textarea.style.height = Math.min(textarea.scrollHeight, 200) + "px";
     }
   }, [value]);
 
-  // Auto-focus on mount
-  useEffect(() => {
-    if (autoFocus && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [autoFocus]);
-
-  const hasValue = value.trim().length > 0;
-
   return (
-    <div className="w-full">
-      <div
-        className={`
-          chatgpt-input
-          ${disabled ? "opacity-50 pointer-events-none" : ""}
-        `}
-      >
-        {/* Attachment button (decorative) */}
-        <button
-          type="button"
-          className="btn-icon flex-shrink-0 -ml-1"
-          aria-label="Attach file"
-          tabIndex={-1}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-          </svg>
-        </button>
-
-        {/* Textarea */}
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+      aria-busy={isSubmitting}
+    >
+      <div className="composer" data-invalid={tooLong || undefined}>
+        <label className="sr-only" htmlFor={id}>
+          Your question
+        </label>
         <textarea
+          id={id}
           ref={textareaRef}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder={placeholder}
-          disabled={disabled}
-          rows={1}
-          className="
-            flex-1
-            bg-transparent
-            text-[var(--text-primary)]
-            placeholder-[var(--text-placeholder)]
-            resize-none
-            outline-none
-            min-h-[24px]
-            max-h-[200px]
-            text-[15px]
-            leading-6
-            py-1.5
-          "
-          style={{
-            height: "auto",
-            minHeight: "24px",
+          onChange={(event) => onChange(event.target.value)}
+          onCompositionStart={() => {
+            composingRef.current = true;
           }}
+          onCompositionEnd={() => {
+            composingRef.current = false;
+          }}
+          onKeyDown={(event) => {
+            // Safari can end composition before dispatching the final Enter key.
+            if (
+              event.nativeEvent.isComposing ||
+              composingRef.current ||
+              event.keyCode === 229
+            )
+              return;
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              onSubmit();
+            }
+          }}
+          placeholder="Ask a question"
+          readOnly={isSubmitting}
+          aria-invalid={tooLong}
+          aria-describedby={
+            [message ? id + "-error" : "", showCount ? id + "-count" : ""]
+              .filter(Boolean)
+              .join(" ") || undefined
+          }
+          rows={1}
+          className="composer-text"
         />
-
-        {/* Send button */}
-        <button
-          onClick={onSubmit}
-          disabled={disabled || !hasValue}
-          className={`send-btn ${hasValue ? "active" : "inactive"}`}
-          aria-label="Send message"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        <div className="composer-toolbar">
+          <span className="composer-label">
+            {isSubmitting ? "Creating link…" : "Create a link to share"}
+          </span>
+          <button
+            type="submit"
+            className="send-btn"
+            disabled={isSubmitting || !length || tooLong}
+            aria-label="Create link"
+            title="Create link (Enter)"
           >
-            <path d="M12 19V5m0 0l-6 6m6-6l6 6" />
-          </svg>
-        </button>
+            {isSubmitting ? (
+              <span className="spinner" aria-hidden="true" />
+            ) : (
+              <SendIcon />
+            )}
+          </button>
+        </div>
       </div>
-
-      {/* Hint text */}
-      <p className="text-center text-[var(--text-muted)] text-xs mt-3">
-        Press Enter to generate link, Shift+Enter for new line
-      </p>
-    </div>
+      <div className="composer-feedback">
+        <p id={id + "-error"} role="alert" className="error-text">
+          {message}
+        </p>
+        {showCount && (
+          <span id={id + "-count"} className={tooLong ? "error-text" : "muted"}>
+            {length.toLocaleString("en-US")} / 2,000
+          </span>
+        )}
+      </div>
+      <span role="status" className="sr-only">
+        {isSubmitting ? "Creating link" : ""}
+      </span>
+    </form>
   );
-});
+}
