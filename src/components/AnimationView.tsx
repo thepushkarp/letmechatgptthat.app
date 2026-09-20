@@ -144,7 +144,12 @@ export function AnimationView({ query }: { query: string }) {
                 <span className="chrome-spacer" />
                 {phase === "urlLoading" && <span className="chrome-progress" />}
               </div>
-              <div className="mockup-content" data-blank={!pageLoaded}>
+              {/* The blank page is only faded out, so keep its controls out of reach until it loads. */}
+              <div
+                className="mockup-content"
+                data-blank={!pageLoaded}
+                inert={!pageLoaded}
+              >
                 <div className="mockup-greeting">
                   <p>What can I help with?</p>
                 </div>

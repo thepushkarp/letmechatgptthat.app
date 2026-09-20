@@ -140,11 +140,20 @@ test("playback steps, pointer, countdown and encoded redirect", async ({
   await page.clock.runFor(500);
   await expect(playback).toHaveAttribute("data-phase", "urlTyping");
   await expect(page.locator(".url-bar")).toHaveText(/^c/);
+  // The faded-out page must not hand keyboard users an invisible textbox.
+  await expect(page.locator(".mockup-content")).toHaveAttribute("inert", "");
+  expect(
+    await page.locator(".simulated-input").evaluate((element: HTMLElement) => {
+      element.focus();
+      return document.activeElement === element;
+    })
+  ).toBe(false);
   await page.clock.runFor(1100);
   await expect(page.locator(".url-bar")).toHaveText("chatgpt.com");
   await expect(playback).toHaveAttribute("data-phase", "urlLoading");
   await page.clock.runFor(600);
   await expect(playback).toHaveAttribute("data-phase", "cursorToInput");
+  await expect(page.locator(".mockup-content")).not.toHaveAttribute("inert");
   const pointer = testInfo.project.name.startsWith("mobile")
     ? page.locator(
         ".browser-frame > div[aria-hidden=true]:not(.browser-chrome)"
