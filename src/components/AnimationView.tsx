@@ -8,7 +8,7 @@ import { AnimatedCursor } from "./AnimatedCursor";
 import { TapIndicator } from "./TapIndicator";
 import { ClickRipple } from "./ClickRipple";
 import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
-import { useAnimationPhase } from "@/hooks/useAnimationPhase";
+import { useAnimationPhase, CHATGPT_HOST } from "@/hooks/useAnimationPhase";
 
 const steps = ["Open ChatGPT", "Ask your question", "Press send"];
 
@@ -53,6 +53,8 @@ export function AnimationView({ query }: { query: string }) {
     rippleOrigin,
     countdown,
     cursorVisible,
+    displayedUrl,
+    pageLoaded,
     handleSendClick,
     openChatGPT,
     reducedMotion,
@@ -63,12 +65,11 @@ export function AnimationView({ query }: { query: string }) {
     onRedirect: redirectToChatGPT,
   });
 
-  const activeStep =
-    phase === "idle"
-      ? 0
-      : ["cursorToInput", "clicking", "typing", "pause"].includes(phase)
-        ? 1
-        : 2;
+  const activeStep = ["idle", "urlTyping", "urlLoading"].includes(phase)
+    ? 0
+    : ["cursorToInput", "clicking", "typing", "pause"].includes(phase)
+      ? 1
+      : 2;
   const finishedTyping = [
     "pause",
     "cursorToSend",
@@ -128,10 +129,27 @@ export function AnimationView({ query }: { query: string }) {
                   <i />
                   <i />
                 </div>
-                <span className="url-bar">chatgpt.com</span>
+                <span className="url-bar" data-typing={!pageLoaded}>
+                  {pageLoaded ? (
+                    CHATGPT_HOST
+                  ) : (
+                    <>
+                      {displayedUrl}
+                      {reducedMotion === false && phase === "urlTyping" && (
+                        <span className="text-caret" />
+                      )}
+                    </>
+                  )}
+                </span>
                 <span className="chrome-spacer" />
+                {phase === "urlLoading" && <span className="chrome-progress" />}
               </div>
-              <div className="mockup-content">
+              {/* The blank page is only faded out, so keep its controls out of reach until it loads. */}
+              <div
+                className="mockup-content"
+                data-blank={!pageLoaded}
+                inert={!pageLoaded}
+              >
                 <div className="mockup-greeting">
                   <p>What can I help with?</p>
                 </div>

@@ -5,6 +5,8 @@ import { useReducedMotion } from "./useReducedMotion";
 
 export type Phase =
   | "idle"
+  | "urlTyping"
+  | "urlLoading"
   | "cursorToInput"
   | "clicking"
   | "typing"
@@ -13,8 +15,15 @@ export type Phase =
   | "waiting"
   | "redirecting";
 type Point = { x: number; y: number };
+
+// Step one is "Open ChatGPT", so it plays out: the address is typed, then the page loads.
+export const CHATGPT_HOST = "chatgpt.com";
+const URL_KEYSTROKE_MS = 65;
+const URL_SUBMIT_MS = 400;
+const PAGE_LOAD_MS = 600;
 interface AnimationState {
   phase: Phase;
+  displayedUrl: string;
   displayedText: string;
   cursorPosition: Point;
   rippleOrigin: Point;
@@ -22,12 +31,14 @@ interface AnimationState {
 }
 type Action =
   | { type: "phase"; phase: Phase; position?: Point }
+  | { type: "typeUrl"; text: string }
   | { type: "type"; text: string }
   | { type: "reduceMotion"; text: string }
   | { type: "tick" };
 
 const initialState: AnimationState = {
   phase: "idle",
+  displayedUrl: "",
   displayedText: "",
   cursorPosition: { x: 80, y: 120 },
   rippleOrigin: { x: 0, y: 0 },
@@ -46,10 +57,17 @@ function reducer(state: AnimationState, action: Action): AnimationState {
             ? (action.position ?? state.cursorPosition)
             : state.rippleOrigin,
       };
+    case "typeUrl":
+      return { ...state, displayedUrl: action.text };
     case "type":
       return { ...state, displayedText: action.text };
     case "reduceMotion":
-      return { ...state, displayedText: action.text, phase: "waiting" };
+      return {
+        ...state,
+        displayedUrl: CHATGPT_HOST,
+        displayedText: action.text,
+        phase: "waiting",
+      };
     case "tick":
       return {
         ...state,
@@ -74,7 +92,7 @@ export function useAnimationPhase({
 }: UseAnimationPhaseOptions) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const reducedMotion = useReducedMotion();
-  const { phase, displayedText } = state;
+  const { phase, displayedUrl, displayedText } = state;
 
   useEffect(() => {
     if (reducedMotion && phase !== "waiting" && phase !== "redirecting") {
@@ -93,13 +111,37 @@ export function useAnimationPhase({
     switch (phase) {
       case "idle":
         timer = setTimeout(
+          () => dispatch({ type: "phase", phase: "urlTyping" }),
+          400
+        );
+        break;
+      case "urlTyping":
+        if (displayedUrl.length < CHATGPT_HOST.length) {
+          timer = setTimeout(
+            () =>
+              dispatch({
+                type: "typeUrl",
+                text: CHATGPT_HOST.slice(0, displayedUrl.length + 1),
+              }),
+            URL_KEYSTROKE_MS
+          );
+        } else {
+          // A beat for the imagined Enter press before the page loads.
+          timer = setTimeout(
+            () => dispatch({ type: "phase", phase: "urlLoading" }),
+            URL_SUBMIT_MS
+          );
+        }
+        break;
+      case "urlLoading":
+        timer = setTimeout(
           () =>
             dispatch({
               type: "phase",
               phase: "cursorToInput",
               position: getInputCenter(),
             }),
-          600
+          PAGE_LOAD_MS
         );
         break;
       case "cursorToInput":
@@ -162,6 +204,7 @@ export function useAnimationPhase({
     return () => clearTimeout(timer);
   }, [
     phase,
+    displayedUrl,
     displayedText,
     query,
     reducedMotion,
@@ -212,9 +255,13 @@ export function useAnimationPhase({
   return {
     ...state,
     reducedMotion,
+    pageLoaded:
+      phase !== "idle" && phase !== "urlTyping" && phase !== "urlLoading",
     cursorVisible:
       reducedMotion === false &&
       phase !== "idle" &&
+      phase !== "urlTyping" &&
+      phase !== "urlLoading" &&
       phase !== "waiting" &&
       phase !== "redirecting",
     isClicking: phase === "clicking",

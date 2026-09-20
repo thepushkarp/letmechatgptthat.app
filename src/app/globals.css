@@ -416,6 +416,7 @@ textarea.composer-text:focus-visible {
   box-shadow: var(--shadow-frame);
 }
 .browser-chrome {
+  position: relative;
   min-height: 48px;
   padding: 10px 16px;
   display: flex;
@@ -454,8 +455,34 @@ textarea.composer-text:focus-visible {
   text-align: center;
   font-size: 12px;
 }
+.url-bar[data-typing="true"] {
+  text-align: left;
+  color: var(--text-primary);
+}
+/* The page-load bar mirrors a browser navigating to chatgpt.com. */
+.chrome-progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--border-strong);
+  animation: chrome-load 600ms linear forwards;
+}
+@keyframes chrome-load {
+  from {
+    width: 12%;
+  }
+  to {
+    width: 100%;
+  }
+}
 .mockup-content {
   padding: 0 28px 28px;
+  transition: opacity 220ms ease-out;
+}
+/* Before the address is submitted the frame is a blank page, so the layout never shifts. */
+.mockup-content[data-blank="true"] {
+  opacity: 0;
 }
 .mockup-greeting {
   height: 230px;

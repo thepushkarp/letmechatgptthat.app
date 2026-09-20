@@ -64,8 +64,9 @@ src/
 
 ### Animation State Machine
 
-`AnimationView` uses phases: `idle` → `cursorToInput` → `clicking` → `typing` → `pause` → `cursorToSend` → `waiting` → `redirecting`
+`AnimationView` uses phases: `idle` → `urlTyping` → `urlLoading` → `cursorToInput` → `clicking` → `typing` → `pause` → `cursorToSend` → `waiting` → `redirecting`
 
+- Step one plays out: `chatgpt.com` is typed into the URL bar over a blank page, a load bar runs, then the ChatGPT page fades in
 - Device-aware: shows cursor on desktop, tap indicator on touch devices
 - 5-second countdown during `waiting` phase before auto-redirect
 - User can click send button or press Enter to skip countdown
