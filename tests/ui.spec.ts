@@ -137,7 +137,13 @@ test("playback steps, pointer, countdown and encoded redirect", async ({
   await page.goto("/?q=" + encodeURIComponent(query));
   const playback = page.locator(".playback-layout");
   await expect(playback).toHaveAttribute("data-phase", "idle");
-  await page.clock.runFor(650);
+  await page.clock.runFor(500);
+  await expect(playback).toHaveAttribute("data-phase", "urlTyping");
+  await expect(page.locator(".url-bar")).toHaveText(/^c/);
+  await page.clock.runFor(1100);
+  await expect(page.locator(".url-bar")).toHaveText("chatgpt.com");
+  await expect(playback).toHaveAttribute("data-phase", "urlLoading");
+  await page.clock.runFor(600);
   await expect(playback).toHaveAttribute("data-phase", "cursorToInput");
   const pointer = testInfo.project.name.startsWith("mobile")
     ? page.locator(
