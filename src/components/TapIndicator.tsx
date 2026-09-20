@@ -13,6 +13,7 @@ export function TapIndicator({
 }: TapIndicatorProps) {
   return (
     <div
+      aria-hidden="true"
       style={{
         position: "absolute",
         // Center the indicator on the tap point
@@ -34,8 +35,8 @@ export function TapIndicator({
           position: "absolute",
           inset: 0,
           borderRadius: "50%",
-          background: "rgba(255, 255, 255, 0.2)",
-          border: "2px solid rgba(255, 255, 255, 0.6)",
+          background: "var(--ripple)",
+          border: "2px solid var(--text-secondary)",
         }}
       />
       {/* Inner dot */}
@@ -48,7 +49,7 @@ export function TapIndicator({
           width: 8,
           height: 8,
           borderRadius: "50%",
-          background: "white",
+          background: "var(--text-primary)",
           boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
         }}
       />

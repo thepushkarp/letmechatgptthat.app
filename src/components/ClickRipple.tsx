@@ -18,11 +18,12 @@ export function ClickRipple({ origin, active }: ClickRippleProps) {
         width: 48,
         height: 48,
         borderRadius: "50%",
-        background: "rgba(16, 163, 127, 0.3)",
+        background: "var(--ripple)",
         pointerEvents: "none",
         zIndex: 999,
       }}
       className="animate-ripple"
+      aria-hidden="true"
     />
   );
 }

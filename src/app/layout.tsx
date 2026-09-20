@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Victor_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
@@ -8,13 +8,6 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-});
-
-const victorMono = Victor_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-mono",
-  weight: ["400", "500"],
 });
 
 const SITE_URL = "https://letmechatgptthat.app";
@@ -41,10 +34,13 @@ const SITE_KEYWORDS = [
 ];
 
 export const viewport: Viewport = {
-  themeColor: "#0d0d0d",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0d0d" },
+  ],
   width: "device-width",
   initialScale: 1,
-  colorScheme: "dark",
+  colorScheme: "light dark",
 };
 
 export const metadata: Metadata = {
@@ -135,7 +131,7 @@ export default function RootLayout({
           {jsonLdString}
         </Script>
       </head>
-      <body className={`${inter.variable} ${victorMono.variable} antialiased`}>
+      <body className={`${inter.variable} antialiased`}>
         {children}
         <Analytics />
       </body>

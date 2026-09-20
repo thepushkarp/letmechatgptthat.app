@@ -12,7 +12,7 @@ export const faqItems: FAQItem[] = [
   {
     question: "How do I create a link?",
     answer:
-      "Simply type your question in the input box on the homepage and click 'Generate Link'. You'll get a short URL that you can copy and share with anyone.",
+      "Type your question and press Enter or the arrow button to create a link. Copy it to share, or choose Preview to watch the animation.",
   },
   {
     question: "What happens when someone clicks my link?",
@@ -42,7 +42,7 @@ export const faqItems: FAQItem[] = [
   {
     question: "Can I customize the animation or redirect behavior?",
     answer:
-      "Currently, the animation and redirect timing are fixed to provide a consistent experience. The recipient can skip the countdown by clicking the send button or pressing Enter.",
+      "The animation is automatic. Choose Open ChatGPT at any time to skip it, or press Enter during the countdown. Reduced-motion settings skip the animation.",
   },
   {
     question: "Does this work on mobile devices?",
