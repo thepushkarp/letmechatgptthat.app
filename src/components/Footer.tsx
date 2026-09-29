@@ -10,6 +10,7 @@ export function Footer({ playback = false }: { playback?: boolean }) {
           Made by{" "}
           <a
             href="https://www.thepushkarp.com/"
+            className="underline"
             target="_blank"
             rel="noopener noreferrer"
           >
