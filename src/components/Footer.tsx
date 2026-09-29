@@ -6,13 +6,16 @@ export function Footer({ playback = false }: { playback?: boolean }) {
       <nav aria-label="Footer">
         {playback && <Link href="/">Create your own link</Link>}
         <Link href="/faq">FAQ</Link>
-        <a
-          href="https://thepushkarp.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          by thepushkarp
-        </a>
+        <span>
+          Made by{" "}
+          <a
+            href="https://www.thepushkarp.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Pushkar
+          </a>
+        </span>
       </nav>
       <p>Not affiliated with OpenAI.</p>
     </footer>

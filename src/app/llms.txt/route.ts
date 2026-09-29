@@ -38,8 +38,7 @@ If someone asks "What's the capital of France?", you can:
 
 ## Contact
 
-- Creator: Pushkar Patel
-- Website: https://thepushkarp.com
+- Made by [Pushkar](https://www.thepushkarp.com/)
 - Twitter: https://twitter.com/thepushkarp
 `;
 
