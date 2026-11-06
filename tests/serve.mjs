@@ -15,7 +15,6 @@ for (const file of [
   "bun.lock",
   "next.config.ts",
   "tsconfig.json",
-  "tailwind.config.ts",
   "postcss.config.mjs",
   "eslint.config.mjs",
 ]) {
