@@ -1,4 +1,5 @@
-import { cp, mkdtemp, symlink, readFile, writeFile } from "node:fs/promises";
+import { constants } from "node:fs";
+import { cp, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createServer } from "node:http";
@@ -20,11 +21,13 @@ for (const file of [
 ]) {
   await cp(join(root, file), join(directory, file), { recursive: true });
 }
-await symlink(
-  join(root, "node_modules"),
-  join(directory, "node_modules"),
-  "dir"
-);
+// A real copy, not a symlink: Turbopack cannot resolve next through a link leaving the snapshot
+// root. Cloning keeps this fast on filesystems that support it and falls back to a plain copy.
+await cp(join(root, "node_modules"), join(directory, "node_modules"), {
+  recursive: true,
+  verbatimSymlinks: true,
+  mode: constants.COPYFILE_FICLONE,
+});
 
 // Stub only the external navigation boundary in the disposable preview, including manual checks.
 // Builds use the unmodified production source.
@@ -66,7 +69,12 @@ const redis = createServer(async (request, response) => {
         default:
           throw new Error("Unsupported fixture command: " + operation);
       }
-      if (typeof result === "string" && result !== "OK")
+      // Like Upstash, encode only for clients that ask, since the client decodes only then.
+      if (
+        request.headers["upstash-encoding"] === "base64" &&
+        typeof result === "string" &&
+        result !== "OK"
+      )
         result = Buffer.from(result).toString("base64");
       return { result };
     };
@@ -87,7 +95,7 @@ console.log("Isolated app snapshot:", directory);
 const child = spawn(
   process.execPath,
   [
-    join(root, "node_modules/next/dist/bin/next"),
+    join(directory, "node_modules/next/dist/bin/next"),
     ...(build
       ? ["build"]
       : ["dev", "--hostname", "127.0.0.1", "--port", "4173"]),

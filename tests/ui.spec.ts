@@ -87,7 +87,9 @@ test("IME, duplicate submission, failure, and retry", async ({ page }) => {
   await question.press("Enter");
   expect(calls).toBe(1);
   finish();
-  await expect(page.getByRole("alert")).toContainText("Try again");
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Try again" })
+  ).toBeVisible();
   await expect(question).toHaveValue("你好 🌈");
   await page.getByRole("button", { name: "Create link" }).click();
   await expect(
@@ -110,7 +112,9 @@ test("character boundary and denied clipboard preserve the input", async ({
   await question.fill("a".repeat(2001));
   await expect(submit).toBeDisabled();
   await expect(question).toHaveAttribute("aria-invalid", "true");
-  await expect(page.getByRole("alert")).toContainText("2,000");
+  await expect(
+    page.getByRole("alert").filter({ hasText: "2,000" })
+  ).toBeVisible();
   await question.fill("a".repeat(2000));
   await expect(submit).toBeEnabled();
   await submit.click();
